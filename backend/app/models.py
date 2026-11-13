@@ -1,5 +1,6 @@
 """Initial schema metadata; execution and legacy data migration are not implemented."""
-from sqlalchemy import CheckConstraint, ForeignKey, ForeignKeyConstraint, Index, String, Text, text
+from datetime import datetime
+from sqlalchemy import CheckConstraint, DateTime, ForeignKey, ForeignKeyConstraint, Index, String, Text, func, text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -49,3 +50,15 @@ class TaskDependency(Base):
     task_id: Mapped[int] = mapped_column(primary_key=True)
     depends_on_id: Mapped[int] = mapped_column(primary_key=True)
     project_id: Mapped[int] = mapped_column(nullable=False)
+
+
+class ActivityEvent(Base):
+    """Limited operational history; not a tamper-proof security audit log."""
+    __tablename__ = 'activity_events'
+    __table_args__ = (Index('ix_activity_events_project_id_id', 'project_id', 'id'),)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    project_id: Mapped[int | None] = mapped_column(ForeignKey('projects.id', ondelete='SET NULL'), nullable=True)
+    task_id: Mapped[int | None] = mapped_column(ForeignKey('tasks.id', ondelete='SET NULL'), nullable=True)
+    related_task_id: Mapped[int | None] = mapped_column(ForeignKey('tasks.id', ondelete='SET NULL'), nullable=True)
+    event_type: Mapped[str] = mapped_column(String(40), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())

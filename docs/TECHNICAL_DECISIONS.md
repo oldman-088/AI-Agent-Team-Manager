@@ -24,3 +24,7 @@ Implement same-project dependency edges with database-enforced membership and an
 ## 2026-11-13: Manual task completion and readiness
 
 A human may explicitly mark a task completed after its direct dependencies are completed. This records no execution, identity, evidence or review and must not be presented as an agent action. Readiness is informational; completion checks again while holding the same lock used for dependency edits. Cancelled prerequisites block completion. Completed tasks cannot acquire new dependencies or be cancelled. Removing an edge remains permitted for cleanup; this is not an audit trail. Downgrading the new state constraint refuses to rewrite completed rows.
+
+## 2026-11-13: Minimal operational task history
+
+Record selected task and dependency events transactionally, without copying names, prompts, credentials or other user content. Null references when a task or project is deleted rather than misattribute history if an ID is reused. Event history is not an authenticated, immutable or complete audit log, has no retention policy, and covers only API-mediated changes after migration 0007. The 0007 downgrade rejects nonempty history to prevent silent loss. Production audit, identity, retention and authorization require separate design.

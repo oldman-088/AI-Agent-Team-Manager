@@ -1,6 +1,6 @@
 # Blockers and limitations
 
 - No project license selected.
-- PostgreSQL unavailable locally; readiness, migration and concurrency tests passed CI at `cee9884`.
-- Automatic scheduling, provider verification, agent execution, audit history, authentication and most platform capabilities remain incomplete.
+- PostgreSQL unavailable locally; new activity migration and transaction checks are pending CI.
+- No authenticated identity, immutable or comprehensive security audit, automatic scheduling, provider verification or agent execution.
 - Full RTL, accessibility, Windows and Python dependency validation remain outstanding.

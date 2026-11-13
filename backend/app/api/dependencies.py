@@ -7,6 +7,7 @@ from sqlalchemy import select, text
 
 from app.api.projects import Db
 from app.models import Project, Task, TaskDependency
+from app.services.activity import record_event
 
 router = APIRouter(prefix='/api/tasks', tags=['task dependencies'])
 TaskId = Annotated[int, Path(ge=1, le=2147483647)]
@@ -73,16 +74,18 @@ def add_dependency(task_id: TaskId, dependency_id: TaskId, db: Db) -> Response:
             visited.add(current)
             pending.extend(graph[current])
     db.add(TaskDependency(task_id=task_id, depends_on_id=dependency_id, project_id=task.project_id))
+    record_event(db, 'dependency.added', task.project_id, task_id, dependency_id)
     db.commit()
     return Response(status_code=204)
 
 
 @router.delete('/{task_id}/dependencies/{dependency_id}', status_code=204)
 def remove_dependency(task_id: TaskId, dependency_id: TaskId, db: Db) -> Response:
-    lock_project(db, task_id)
+    task = lock_project(db, task_id)
     edge = db.get(TaskDependency, (task_id, dependency_id))
     if edge is None:
         raise HTTPException(status_code=404, detail='Dependency not found')
     db.delete(edge)
+    record_event(db, 'dependency.removed', task.project_id, task_id, dependency_id)
     db.commit()
     return Response(status_code=204)

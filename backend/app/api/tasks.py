@@ -8,6 +8,7 @@ from app.api.projects import Db
 from app.api.dependencies import lock_project
 from app.models import Project, Task, TaskDependency
 from app.schemas import TaskCreate, TaskReadiness, TaskUpdate, TaskView
+from app.services.activity import record_event
 
 router = APIRouter(prefix='/api/tasks', tags=['tasks'])
 TaskId = Annotated[int, Path(ge=1, le=2147483647)]
@@ -37,6 +38,8 @@ def create_task(data: TaskCreate, db: Db) -> Task:
         raise HTTPException(status_code=422, detail='Project does not exist')
     task = Task(**data.model_dump())
     db.add(task)
+    db.flush()
+    record_event(db, 'task.created', task.project_id, task.id)
     db.commit()
     db.refresh(task)
     return task
@@ -55,6 +58,7 @@ def update_task(task_id: TaskId, data: TaskUpdate, db: Db) -> Task:
     task = find_task(db, task_id)
     for field, value in changes.items():
         setattr(task, field, value)
+    record_event(db, 'task.updated', task.project_id, task.id)
     db.commit()
     db.refresh(task)
     return task
@@ -86,6 +90,7 @@ def complete_task(task_id: TaskId, db: Db) -> Task:
     if blocking_dependencies(db, task_id):
         raise HTTPException(status_code=409, detail='Dependencies are not completed')
     task.status = 'completed'
+    record_event(db, 'task.completed_manual', task.project_id, task.id)
     db.commit()
     db.refresh(task)
     return task
@@ -98,6 +103,7 @@ def cancel_task(task_id: TaskId, db: Db) -> Task:
         raise HTTPException(status_code=409, detail='Completed task cannot be cancelled')
     if task.status == 'pending':
         task.status = 'cancelled'
+        record_event(db, 'task.cancelled', task.project_id, task.id)
         db.commit()
         db.refresh(task)
     return task
@@ -106,8 +112,10 @@ def cancel_task(task_id: TaskId, db: Db) -> Task:
 @router.delete('/{task_id}', status_code=204)
 def delete_task(task_id: TaskId, db: Db) -> Response:
     task = find_task(db, task_id)
-    db.delete(task)
     try:
+        record_event(db, 'task.deleted', task.project_id, task.id)
+        db.flush()
+        db.delete(task)
         db.commit()
     except IntegrityError:
         db.rollback()

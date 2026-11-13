@@ -8,7 +8,7 @@ from alembic import command
 from alembic.config import Config
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, inspect, text
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from app.config import Settings
 from app.database import make_engine
@@ -104,6 +104,14 @@ def test_migration_and_readiness(tmp_path, monkeypatch):
             assert client.post(f'/api/agents/{agent_id}/start', json={}).status_code == 404
             assert client.get('/api/agents?limit=101').status_code == 422
             assert client.patch(f'/api/agents/{agent_id}', json={'execution_status': 'running'}).status_code == 422
+            # An event persistence failure must also roll back the task mutation.
+            def fail_event(*args, **kwargs):
+                raise SQLAlchemyError('simulated failure')
+            with monkeypatch.context() as patch:
+                patch.setattr('app.api.tasks.record_event', fail_event)
+                assert client.post('/api/tasks', json={'project_id': project_id, 'title': 'Rollback'}).status_code == 503
+            assert client.get(f'/api/tasks?project_id={project_id}').json() == []
+            assert client.get(f'/api/events?project_id={project_id}').json() == []
             assert client.post('/api/tasks', json={'project_id': 2147483647, 'title': 'Missing'}).status_code == 422
             assert client.post('/api/tasks', json={'project_id': project_id, 'title': '   '}).status_code == 422
             response = client.post('/api/tasks', json={'project_id': project_id, 'title': '  Plan  ', 'description': 'Details'})
@@ -111,6 +119,10 @@ def test_migration_and_readiness(tmp_path, monkeypatch):
             task = response.json()
             assert task['title'] == 'Plan' and task['status'] == 'pending'
             task_id = task['id']
+            events = client.get(f'/api/events?project_id={project_id}').json()
+            assert events[0]['event_type'] == 'task.created' and events[0]['task_id'] == task_id
+            assert 'Plan' not in str(events) and 'Details' not in str(events)
+            assert client.get('/api/events?limit=101').status_code == 422
             assert client.get(f'/api/tasks?project_id={project_id}').json()[0]['id'] == task_id
             assert client.get('/api/tasks?project_id=2147483647').json() == []
             assert client.get('/api/tasks?limit=101').status_code == 422
@@ -121,6 +133,8 @@ def test_migration_and_readiness(tmp_path, monkeypatch):
             edge = f'/api/tasks/{task_id}/dependencies/{second}'
             assert client.put(edge, json={}).status_code == 204
             assert client.put(edge, json={}).status_code == 204
+            edge_events = client.get(f'/api/events?project_id={project_id}').json()
+            assert sum(e['event_type'] == 'dependency.added' and e['task_id'] == task_id and e['related_task_id'] == second for e in edge_events) == 1
             assert client.get(f'/api/tasks/{task_id}/dependencies').json() == [second]
             assert client.put(f'/api/tasks/{second}/dependencies/{third}', json={}).status_code == 204
             assert client.put(f'/api/tasks/{third}/dependencies/{task_id}', json={}).status_code == 409
@@ -136,6 +150,7 @@ def test_migration_and_readiness(tmp_path, monkeypatch):
                 strict_engine.dispose()
             assert client.put(f'/api/tasks/{task_id}/dependencies/2147483647', json={}).status_code == 404
             assert client.delete(f'/api/tasks/{second}').status_code == 409
+            assert not any(e['event_type'] == 'task.deleted' and e['task_id'] == second for e in client.get(f'/api/events?project_id={project_id}').json())
             assert client.delete(edge).status_code == 204
             assert client.delete(edge).status_code == 404
             assert client.delete(f'/api/tasks/{second}/dependencies/{third}').status_code == 204
@@ -206,16 +221,27 @@ def test_migration_and_readiness(tmp_path, monkeypatch):
             assert client.patch(f'/api/tasks/{task_id}', json={'status': 'running'}).status_code == 422
             assert client.post(f'/api/tasks/{task_id}/cancel', json={}).json()['status'] == 'cancelled'
             assert client.post(f'/api/tasks/{task_id}/cancel', json={}).json()['status'] == 'cancelled'
+            history = client.get(f'/api/events?project_id={project_id}').json()
+            assert sum(e['event_type'] == 'task.cancelled' and e['task_id'] == task_id for e in history) == 1
             assert client.post('/api/tasks/2147483647/cancel', json={}).status_code == 404
             assert client.delete(f'/api/projects/{project_id}').status_code == 409
             assert client.get(f'/api/tasks/{task_id}').status_code == 200
             assert client.delete(f'/api/tasks/{task_id}').status_code == 204
             assert client.get(f'/api/tasks/{task_id}').status_code == 404
+            deleted_events = client.get(f'/api/events?project_id={project_id}').json()
+            assert any(e['event_type'] == 'task.deleted' and e['task_id'] is None for e in deleted_events)
             assert client.delete(f'/api/projects/{project_id}').status_code == 204
+            assert client.get(f'/api/events?project_id={project_id}').json() == []
+            assert any(e['project_id'] is None for e in client.get('/api/events').json())
             assert client.get(f'/api/agents/{agent_id}').json()['project_id'] is None
             assert client.delete(f'/api/agents/{agent_id}').status_code == 204
             assert client.get(f'/api/agents/{agent_id}').status_code == 404
             assert client.get(f'/api/projects/{project_id}').status_code == 404
+        with pytest.raises(RuntimeError, match='activity events exist'):
+            command.downgrade(config, 'base')
+        # Disposable test DB only: explicitly remove history to test the reverse migration.
+        with engine.begin() as connection:
+            connection.execute(text('DELETE FROM activity_events'))
         command.downgrade(config, 'base')
         assert 'projects' not in inspect(engine).get_table_names()
     finally:

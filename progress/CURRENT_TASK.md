@@ -1,3 +1,3 @@
 # Current task
 
-Design safe automatic scheduling and agent execution, and add audit history and access controls. All PR checks passed at `cee9884`.
+Verify task activity migration, transaction behavior and UI in GitHub Actions; design authenticated audit and safe agent execution.

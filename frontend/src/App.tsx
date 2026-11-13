@@ -2,8 +2,9 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { fetchHealth, type Health } from './health';
 import { createProject, listProjects, type Project } from './projects';
 import { createAgent, listAgents, type Agent } from './agents';
+import { listEvents, type ActivityEvent } from './events';
 import { completeTask, createTask, listTasks, type Task } from './tasks';
-import { direction, messages, statusLabel, type Locale } from './i18n/messages';
+import { direction, eventLabel, messages, statusLabel, type Locale } from './i18n/messages';
 
 type ErrorKey = 'loadError' | 'projectError' | 'agentError' | 'taskError' | 'completeError';
 
@@ -14,6 +15,7 @@ export function App() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [agents, setAgents] = useState<Agent[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [events, setEvents] = useState<ActivityEvent[]>([]);
   const [error, setError] = useState<ErrorKey | null>(null);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -39,10 +41,10 @@ export function App() {
     setHealth(state);
     if (state === 'ready') {
       try {
-        const [projectList, agentList, taskList] = await Promise.all([listProjects(), listAgents(), listTasks()]);
-        setProjects(projectList); setAgents(agentList); setTasks(taskList);
+        const [projectList, agentList, taskList, activity] = await Promise.all([listProjects(), listAgents(), listTasks(), listEvents()]);
+        setProjects(projectList); setAgents(agentList); setTasks(taskList); setEvents(activity);
       } catch { setError('loadError'); }
-    } else { setProjects([]); setAgents([]); setTasks([]); }
+    } else { setProjects([]); setAgents([]); setTasks([]); setEvents([]); }
   }
   useEffect(() => { void refresh(); }, []);
 
@@ -108,6 +110,9 @@ export function App() {
         <button disabled={savingTask || health !== 'ready' || !projects.length}>{savingTask ? t.saving : t.createTask}</button>
       </form>
       {tasks.length ? <ul>{tasks.map(task => <li key={task.id}><strong><bdi>{task.title}</bdi></strong> · {statusLabel(locale, task.status)} · <bdi>{projects.find(project => project.id === task.project_id)?.name ?? `#${task.project_id}`}</bdi>{task.status === 'pending' && <button className="task-action" disabled={completingId !== null} onClick={() => void finishTask(task.id)}>{t.manualComplete}</button>}</li>)}</ul> : <p>{t.noTasks}</p>}
+    </section>
+    <section aria-labelledby="activity-heading"><h2 id="activity-heading">{t.activity}</h2><p>{t.activityHelp}</p>
+      {events.length ? <ul>{events.map(event => <li key={event.id}>{eventLabel(locale, event.event_type)} · <bdi>{event.created_at}</bdi>{event.task_id !== null && <> · <bdi>#{event.task_id}</bdi></>}</li>)}</ul> : <p>{t.noActivity}</p>}
     </section>
     <section><h2>{t.underConstruction}</h2><p>{t.limitations}</p></section>
   </main>;

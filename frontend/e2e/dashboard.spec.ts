@@ -52,4 +52,5 @@ test('create records and switch language with RTL and keyboard access', async ({
   await expect(projectSection.locator('li')).toContainText('مشروع AATM');
   await taskSection.getByRole('button', {name: 'Mark complete manually'}).click();
   await expect(taskSection.locator('li')).toContainText('Completed');
+  await expect(page.getByRole('region', {name: 'Recent task activity'}).locator('li').first()).toContainText('Task completed manually');
 });

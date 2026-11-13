@@ -1,21 +1,21 @@
 # Workflow report
 
-Last updated: 2026-11-13T17:46:43+00:00
+Last updated: 2026-11-13T17:50:00+00:00
 
 ## Completion indicator
 
-**13.3% of acceptance criteria verified**: 4 of 30 equally weighted binary criteria (2–5). Partial criteria receive zero. This is not an effort or delivery-time estimate. See [Arabic progress report](تقرير_التقدم.md). Dependency criterion remains uncounted while automated execution/scheduling is absent.
+**13.3% of acceptance criteria verified**: 4 of 30 equally weighted binary criteria (2–5). Partial criteria receive zero; this is not an effort or delivery estimate. See [Arabic progress report](تقرير_التقدم.md).
 
 ## Current work
 
-Added dependency-aware readiness snapshots and explicit user-asserted manual completion. Completion rechecks dependencies under the project lock; cancelled dependencies block completion. Completed tasks cannot gain dependencies or be cancelled. This does not claim an agent ran or provide audit evidence. Migration 0006 refuses to downgrade while completed tasks exist. The dashboard supports manual completion; dependency editing remains API-only.
+Added a metadata-only task activity history, persisted in the same transaction as selected task and dependency changes. The dashboard displays recent events. The 0007 downgrade refuses to discard nonempty history. Events have no authenticated actor, are not tamper-proof, and do not form a complete security audit; only API-mediated task operations after migration are covered. No task content or secrets are copied to events. Deleting referenced tasks/projects detaches their IDs rather than allowing ID reuse to misattribute history.
 
-## Verification
+## Verification and fixes
 
-- Backend: 11 tests passed locally using SQLite, covering existing-data migration, downgrade safety, readiness, cancellation and completion vs dependency-insertion race. Starlette httpx deprecation warning remains.
-- Frontend: typecheck, 12 tests and production build passed. At `cee9884`, all PR checks passed, including [PostgreSQL migration/concurrency](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43475967550), [browser E2E](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43475967293), [frontend](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43475967537), [prototype matrix](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43475967623), and [CodeQL](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43475967361). Later commits require their own checks.
-- Previous dependency CI passed at `abe66ee`; current changes require their own checks.
+- Backend: 11 tests passed on SQLite, including rollback on event failure, idempotence, detach behavior and downgrade protection. First test run exposed the intended downgrade guard; updated the disposable test to check it before explicitly clearing test data. Starlette httpx deprecation warning remains.
+- Frontend: typecheck, 13 tests and build passed; npm audit found zero vulnerabilities. Initial typecheck failed on a missing import; fixed and reran.
+- Documentation inventory and diff check passed before report update. PostgreSQL/browser/CodeQL CI for current work pending. Prior checks passed at `cee9884`.
 
-## Blockers and next actions
+## Limitations and next actions
 
-PostgreSQL is unavailable locally, but its CI tests and browser E2E passed. Design actual scheduling and agent execution with audit and security controls. No project license selected. Most requested platform capabilities remain incomplete; duration unknown. See JSON report for file inventory.
+Project license remains unselected. PostgreSQL is unavailable locally. Verify CI, then design authenticated and tamper-resistant auditing and safe execution. Agent execution, automatic scheduling, authentication, comprehensive audit and most platform capabilities are incomplete. See JSON report for file inventory; duration unknown.

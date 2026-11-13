@@ -10,6 +10,8 @@ const en = {
   tasks: 'Planning tasks', tasksHelp: 'Tasks are planning records only; dependencies are editable via API, but assignment and execution are not implemented.',
   manualComplete: 'Mark complete manually', completeHelp: 'Manual completion is your assertion; it does not mean an agent ran.', completeError: 'Could not complete task. Check that its dependencies are completed.',
   selectProject: 'Select a project', taskTitle: 'Task title', createTask: 'Create task', noTasks: 'No tasks loaded.',
+  activity: 'Recent task activity', activityHelp: 'Metadata only; this is not a security audit log. Timestamps use database time.', noActivity: 'No activity loaded.',
+  eventCreated: 'Task created', eventUpdated: 'Task updated', eventCancelled: 'Task cancelled', eventCompleted: 'Task completed manually', eventDeleted: 'Task deleted', eventDependencyAdded: 'Dependency added', eventDependencyRemoved: 'Dependency removed', eventUnknown: 'Other activity',
   underConstruction: 'Under construction', limitations: 'Agent execution, providers and orchestration are not available in this dashboard. Editing and deletion are available through the API only.',
   loadError: 'Could not load data. Check the backend and database.', projectError: 'Could not create the project. Check the form and database.',
   agentError: 'Could not create the agent configuration. Check the form and database.', taskError: 'Could not create the task. Check the form and database.',
@@ -32,6 +34,8 @@ const ar: Translations = {
   tasks: 'المهام التخطيطية', tasksHelp: 'هذه سجلات للتخطيط فقط؛ التبعيات قابلة للتعديل عبر API، لكن الإسناد والتنفيذ غير مطبّقين.',
   manualComplete: 'تحديد المهمة كمكتملة يدويًا', completeHelp: 'الإكمال اليدوي تأكيد منك، ولا يعني أن وكيلًا نفّذ المهمة.', completeError: 'تعذّر إكمال المهمة. تحقق من إكمال تبعياتها.',
   selectProject: 'اختر مشروعًا', taskTitle: 'عنوان المهمة', createTask: 'إنشاء مهمة', noTasks: 'لا توجد مهام محمّلة.',
+  activity: 'أحداث المهام الأخيرة', activityHelp: 'بيانات وصفية فقط؛ هذا ليس سجل تدقيق أمني. التوقيت وفق قاعدة البيانات.', noActivity: 'لا توجد أحداث محمّلة.',
+  eventCreated: 'أُنشئت مهمة', eventUpdated: 'عُدّلت مهمة', eventCancelled: 'أُلغيت مهمة', eventCompleted: 'أُكملت مهمة يدويًا', eventDeleted: 'حُذفت مهمة', eventDependencyAdded: 'أُضيفت تبعية', eventDependencyRemoved: 'أُزيلت تبعية', eventUnknown: 'حدث آخر',
   underConstruction: 'قيد الإنشاء', limitations: 'تشغيل الوكلاء والمزوّدون والتنسيق غير متاحة في لوحة التحكم. التعديل والحذف متاحان عبر واجهة API فقط.',
   loadError: 'تعذّر تحميل البيانات. تحقق من الخادم وقاعدة البيانات.', projectError: 'تعذّر إنشاء المشروع. تحقق من النموذج وقاعدة البيانات.',
   agentError: 'تعذّر إنشاء إعداد الوكيل. تحقق من النموذج وقاعدة البيانات.', taskError: 'تعذّر إنشاء المهمة. تحقق من النموذج وقاعدة البيانات.',
@@ -50,6 +54,8 @@ const fa: Translations = {
   tasks: 'وظایف برنامه‌ریزی', tasksHelp: 'این‌ها فقط رکوردهای برنامه‌ریزی هستند؛ وابستگی‌ها از طریق API قابل ویرایش‌اند، اما تخصیص و اجرا پیاده‌سازی نشده‌اند.',
   manualComplete: 'علامت‌گذاری دستی به عنوان تکمیل‌شده', completeHelp: 'تکمیل دستی تأیید شماست و به معنی اجرای عامل نیست.', completeError: 'تکمیل وظیفه ممکن نشد. تکمیل وابستگی‌ها را بررسی کنید.',
   selectProject: 'پروژه‌ای انتخاب کنید', taskTitle: 'عنوان وظیفه', createTask: 'ایجاد وظیفه', noTasks: 'وظیفه‌ای بارگذاری نشده است.',
+  activity: 'فعالیت اخیر وظایف', activityHelp: 'فقط فراداده؛ این گزارش ممیزی امنیتی نیست. زمان‌ها مطابق پایگاه داده‌اند.', noActivity: 'فعالیتی بارگذاری نشده است.',
+  eventCreated: 'وظیفه ایجاد شد', eventUpdated: 'وظیفه ویرایش شد', eventCancelled: 'وظیفه لغو شد', eventCompleted: 'وظیفه دستی تکمیل شد', eventDeleted: 'وظیفه حذف شد', eventDependencyAdded: 'وابستگی افزوده شد', eventDependencyRemoved: 'وابستگی حذف شد', eventUnknown: 'فعالیت دیگر',
   underConstruction: 'در دست ساخت', limitations: 'اجرای عامل‌ها، ارائه‌دهندگان و هماهنگی در این داشبورد در دسترس نیستند. ویرایش و حذف فقط از طریق API در دسترس است.',
   loadError: 'بارگذاری داده‌ها ناموفق بود. سرور و پایگاه داده را بررسی کنید.', projectError: 'ایجاد پروژه ناموفق بود. فرم و پایگاه داده را بررسی کنید.',
   agentError: 'ایجاد پیکربندی عامل ناموفق بود. فرم و پایگاه داده را بررسی کنید.', taskError: 'ایجاد وظیفه ناموفق بود. فرم و پایگاه داده را بررسی کنید.',
@@ -61,4 +67,13 @@ export const direction = (locale: Locale): 'ltr' | 'rtl' => locale === 'en' ? 'l
 export function statusLabel(locale: Locale, status: string): string {
   const labels: Record<string, MessageKey> = {planned: 'planned', active: 'active', paused: 'paused', completed: 'completed', archived: 'archived', pending: 'pending', cancelled: 'cancelled'};
   return messages[locale][labels[status] ?? 'unknown'];
+}
+
+export function eventLabel(locale: Locale, event: string): string {
+  const labels: Record<string, MessageKey> = {
+    'task.created': 'eventCreated', 'task.updated': 'eventUpdated', 'task.cancelled': 'eventCancelled',
+    'task.completed_manual': 'eventCompleted', 'task.deleted': 'eventDeleted',
+    'dependency.added': 'eventDependencyAdded', 'dependency.removed': 'eventDependencyRemoved',
+  };
+  return messages[locale][labels[event] ?? 'eventUnknown'];
 }
