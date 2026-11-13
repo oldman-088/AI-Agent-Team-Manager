@@ -20,3 +20,11 @@ it('sends JSON for dependency addition and no body for removal', async () => {
   await changeDependency(1, 2, false, fetcher);
   expect(fetcher).toHaveBeenLastCalledWith('/api/tasks/1/dependencies/2', {method: 'DELETE'});
 });
+
+it('loads ready tasks and surfaces server errors', async () => {
+  const { listReadyTasks } = await import('./tasks');
+  const fetcher = vi.fn().mockResolvedValue({ok: true, json: async () => []});
+  expect(await listReadyTasks(fetcher)).toEqual([]);
+  expect(fetcher).toHaveBeenCalledWith('/api/tasks/ready');
+  await expect(listReadyTasks(vi.fn().mockResolvedValue({ok: false}))).rejects.toThrow('Could not load ready tasks');
+});

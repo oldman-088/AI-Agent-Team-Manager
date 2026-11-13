@@ -1,9 +1,9 @@
 {
-  "last_updated_utc": "2026-11-13T18:24:52+00:00",
+  "last_updated_utc": "2026-11-13T18:28:41+00:00",
   "overall_completion_percentage": null,
   "completion_note": "Total project effort completion unknown. The acceptance-criteria indicator is conservative and equally weighted; it is not an estimate of effort or delivery date.",
   "current_phase": "Phases 0–4 and partial Phase 10 in progress",
-  "current_task": "Design authenticated audit and safe agent execution",
+  "current_task": "Verify ready task snapshot API and dashboard in CI",
   "completed_tasks": [
     "Inspected repository, branches, permissions and local tools",
     "Researched candidate repositories and documented preliminary findings",
@@ -42,11 +42,12 @@
     "Protected event history from accidental downgrade deletion",
     "Added localized task dependency and readiness panel",
     "Implemented planning-only manual task assignment and localized UI",
-    "Enabled unassignment of terminal tasks without deleting records"
+    "Enabled unassignment of terminal tasks without deleting records",
+    "Added read-only ready-task snapshot and localized dashboard panel"
   ],
   "in_progress_tasks": [
-    "Design authenticated audit and safe agent execution",
-    "Expand accessibility and concurrency coverage"
+    "Verify ready task snapshot on PostgreSQL and Chromium",
+    "Design authenticated audit and safe agent execution"
   ],
   "pending_tasks": [
     "Full project and agent management",
@@ -57,10 +58,12 @@
   ],
   "files_created": [],
   "files_modified": [
-    "backend/app/api/assignments.py",
+    "backend/app/api/tasks.py",
     "backend/tests/test_foundation.py",
     "backend/README.md",
-    "frontend/src/TaskAssignment.tsx",
+    "frontend/src/tasks.ts",
+    "frontend/src/tasks.test.ts",
+    "frontend/src/App.tsx",
     "frontend/src/i18n/messages.ts",
     "frontend/e2e/dashboard.spec.ts",
     "frontend/README.md",
@@ -75,36 +78,32 @@
   "tests_executed": [
     {
       "command": "cd backend && pytest -q",
-      "result": "11 passed on SQLite including assignment vs agent move concurrency; Starlette deprecation warning"
+      "result": "11 passed on SQLite including ready task status, dependencies, filters and pagination; Starlette deprecation warning"
     },
     {
       "command": "cd frontend && npm run typecheck && npm test && npm run build",
-      "result": "15 passed, frontend build passed"
+      "result": "16 tests passed, frontend build passed"
     },
     {
       "command": "cd frontend && npm audit --audit-level=high",
       "result": "0 vulnerabilities"
-    },
-    {
-      "command": "gh pr checks 4 --watch at 4158e99",
-      "result": "All passed: PostgreSQL assignment/move race, Chromium terminal unassignment, frontend, prototype matrix and CodeQL"
     }
   ],
-  "build_status": "All PR checks passed at 4158e99; later commits require their own checks.",
+  "build_status": "PostgreSQL ready query and Chromium ready panel tests pending CI",
   "errors_encountered": [
     "Starlette httpx deprecation warning persists"
   ],
   "fixes_implemented": [
-    "Added database-enforced project scoped assignment consistency and downgrade guard"
+    "Added one-query advisory ready-task list with bounded pagination and filters"
   ],
   "blockers": [
     "No project license selected",
-    "PostgreSQL unavailable locally; new concurrency test passed in CI",
+    "PostgreSQL unavailable locally; ready task query needs CI",
     "No authenticated, immutable or complete security audit; no agent execution or production security"
   ],
   "next_actions": [
-    "Design authenticated audit and safe agent execution",
-    "Expand accessibility and concurrency testing"
+    "Verify PostgreSQL and Chromium CI",
+    "Design authenticated audit and safe agent execution"
   ],
   "estimated_remaining_work": "26 of 30 full acceptance criteria remain unverified; duration unknown.",
   "acceptance_criteria_completion_percentage": 13.3,

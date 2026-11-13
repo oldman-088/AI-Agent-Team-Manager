@@ -32,3 +32,7 @@ Record selected task and dependency events transactionally, without copying name
 ## 2026-11-13: Planning-only task assignments
 
 Use a separate one-per-task assignment table with composite project-scoped foreign keys. Database constraints prevent moving or deleting assigned agents and cross-project associations, including direct SQL; deleting a task cascades its assignment. Adding or changing an assignment is permitted for pending tasks under the existing project lock. Removing it is permitted in any status so terminal records do not trap agent configurations; deleting the task also removes the association. Idempotent repeats produce no event. This is not a worker lease, scheduling mechanism, runtime status, security audit or proof of execution. Downgrade 0008 refuses to erase active assignments.
+
+## 2026-11-13: Read-only ready-task snapshot
+
+A single database query lists pending tasks without incomplete direct prerequisites; project and assignment filters and bounded pagination are available. This is advisory and does not claim, lock or schedule tasks. Offset pages can shift during concurrent writes and the list may be stale immediately. Manual completion retains its independent project-locked check. A reliable future worker scheduler will require transactional claims, leases, recovery and authorization rather than using this list as a queue.

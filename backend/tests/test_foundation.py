@@ -134,6 +134,10 @@ def test_migration_and_readiness(tmp_path, monkeypatch):
             assert client.put(assignment_url, json={'agent_id': other_agent}).status_code == 422
             assert client.delete(f'/api/agents/{other_agent}').status_code == 204
             assert client.put(assignment_url, json={'agent_id': agent_id}).json()['agent_id'] == agent_id
+            ready = client.get(f'/api/tasks/ready?project_id={project_id}&assigned_only=true').json()
+            assert [item['id'] for item in ready] == [task_id]
+            assert client.get('/api/tasks/ready?limit=101').status_code == 422
+            assert client.get('/api/tasks/ready?offset=-1').status_code == 422
             assert client.put(assignment_url, json={'agent_id': agent_id}).status_code == 200
             assert client.patch(f'/api/agents/{agent_id}', json={'project_id': None}).status_code == 409
             assert client.delete(f'/api/agents/{agent_id}').status_code == 409
@@ -191,11 +195,20 @@ def test_migration_and_readiness(tmp_path, monkeypatch):
             lead = client.post('/api/tasks', json={'project_id': project_id, 'title': 'Lead'}).json()['id']
             prerequisite = client.post('/api/tasks', json={'project_id': project_id, 'title': 'Prerequisite'}).json()['id']
             assert client.put(f'/api/tasks/{lead}/dependencies/{prerequisite}', json={}).status_code == 204
+            ready_ids = [item['id'] for item in client.get(f'/api/tasks/ready?project_id={project_id}').json()]
+            assert lead not in ready_ids and prerequisite in ready_ids and ready_ids == sorted(ready_ids)
+            assert client.get('/api/tasks/ready?project_id=2147483647').json() == []
+            assert len(client.get(f'/api/tasks/ready?project_id={project_id}&limit=1').json()) == 1
+            first_page = client.get(f'/api/tasks/ready?project_id={project_id}&limit=1').json()
+            second_page = client.get(f'/api/tasks/ready?project_id={project_id}&limit=1&offset=1').json()
+            assert second_page and first_page[0]['id'] != second_page[0]['id']
             assert client.get(f'/api/tasks/{lead}/readiness').json() == {'task_id': lead, 'ready': False, 'status': 'pending', 'blocking_dependencies': [prerequisite]}
             assert client.post(f'/api/tasks/{lead}/complete', json={}).status_code == 409
             assert client.post(f'/api/tasks/{prerequisite}/complete', json={}).json()['status'] == 'completed'
             assert client.post(f'/api/tasks/{prerequisite}/cancel', json={}).status_code == 409
             assert client.get(f'/api/tasks/{lead}/readiness').json()['ready'] is True
+            ready_ids = [item['id'] for item in client.get(f'/api/tasks/ready?project_id={project_id}').json()]
+            assert lead in ready_ids and prerequisite not in ready_ids
             assert client.post(f'/api/tasks/{lead}/complete', json={}).json()['status'] == 'completed'
             assert client.post(f'/api/tasks/{lead}/complete', json={}).status_code == 200
             assert client.get(f'/api/tasks/{lead}/readiness').json()['ready'] is False
@@ -209,6 +222,8 @@ def test_migration_and_readiness(tmp_path, monkeypatch):
             assert client.post(f'/api/tasks/{cancelled}/cancel', json={}).status_code == 200
             assert client.post(f'/api/tasks/{cancelled}/complete', json={}).status_code == 409
             assert client.get(f'/api/tasks/{blocked}/readiness').json()['blocking_dependencies'] == [cancelled]
+            ready_ids = [item['id'] for item in client.get(f'/api/tasks/ready?project_id={project_id}').json()]
+            assert blocked not in ready_ids and cancelled not in ready_ids
             assert client.post(f'/api/tasks/{blocked}/complete', json={}).status_code == 409
             assert client.delete(f'/api/tasks/{blocked}/dependencies/{cancelled}').status_code == 204
             assert client.delete(f'/api/tasks/{blocked}').status_code == 204

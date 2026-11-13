@@ -28,6 +28,7 @@ test('create records and switch language with RTL and keyboard access', async ({
   await page.getByRole('button', { name: 'Create task' }).click();
   await expect(taskSection.locator('li')).toContainText('Check UI');
   await expect(taskSection.locator('li')).toContainText('Pending');
+  await expect(page.getByRole('region', {name: 'Ready planning tasks'}).locator('li')).toContainText('Check UI');
 
   await page.getByLabel('Language').selectOption('ar');
   await expect(page.locator('html')).toHaveAttribute('lang', 'ar');
@@ -52,6 +53,7 @@ test('create records and switch language with RTL and keyboard access', async ({
   await expect(projectSection.locator('li')).toContainText('مشروع AATM');
   await taskSection.getByRole('button', {name: 'Mark complete manually'}).click();
   await expect(taskSection.locator('li')).toContainText('Completed');
+  await expect(page.getByRole('region', {name: 'Ready planning tasks'}).locator('li')).toHaveCount(0);
   await expect(page.getByRole('region', {name: 'Recent task activity'}).locator('li').first()).toContainText('Task completed manually');
 });
 
@@ -85,11 +87,13 @@ test('manage task dependencies and inspect readiness', async ({page}) => {
   await page.getByRole('combobox', {name: 'Prerequisite', exact: true}).selectOption({index: 1});
   await page.getByRole('button', {name: 'Add dependency'}).click();
   await expect(page.getByText('Not ready for manual completion', {exact: true})).toBeVisible();
+  await expect(page.getByRole('region', {name: 'Ready planning tasks'}).locator('li').filter({hasText: 'Consumer'})).toHaveCount(0);
   await expect(page.getByText(/Incomplete prerequisites:/)).toContainText('Prerequisite');
   await section.locator('li').filter({hasText: 'Consumer'}).first().getByRole('button', {name: 'Mark complete manually'}).click();
   await expect(page.getByRole('alert')).toContainText('Could not complete task');
   await page.getByRole('button', {name: /Remove dependency: Prerequisite/}).click();
   await expect(page.getByText('Ready for manual completion', {exact: true})).toBeVisible();
+  await expect(page.getByRole('region', {name: 'Ready planning tasks'}).locator('li').filter({hasText: 'Consumer'})).toHaveCount(1);
   await page.getByLabel('Language').selectOption('ar');
   await expect(page.getByText('جاهزة للإكمال اليدوي')).toBeVisible();
   await page.getByLabel('اللغة').selectOption('en');

@@ -48,3 +48,9 @@ export async function setAssignment(id: number, agentId: number | null, fetcher:
   const response = await fetcher(`/api/tasks/${id}/assignment`, {method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({agent_id: agentId})});
   if (!response.ok) throw new Error('Could not change assignment');
 }
+
+export async function listReadyTasks(fetcher: typeof fetch = fetch): Promise<Task[]> {
+  const response = await fetcher('/api/tasks/ready');
+  if (!response.ok) throw new Error('Could not load ready tasks');
+  return response.json();
+}

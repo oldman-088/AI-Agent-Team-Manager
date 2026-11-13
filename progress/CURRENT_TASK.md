@@ -1,3 +1,3 @@
 # Current task
 
-Design authenticated audit and safe agent execution; expand accessibility and concurrency coverage. All PR checks passed at `4158e99`.
+Verify ready-task query and dashboard on PostgreSQL and Chromium CI; then design authenticated audit and safe execution.

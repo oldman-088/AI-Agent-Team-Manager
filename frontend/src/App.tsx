@@ -5,7 +5,7 @@ import { fetchHealth, type Health } from './health';
 import { createProject, listProjects, type Project } from './projects';
 import { createAgent, listAgents, type Agent } from './agents';
 import { listEvents, type ActivityEvent } from './events';
-import { completeTask, createTask, listTasks, type Task } from './tasks';
+import { completeTask, createTask, listReadyTasks, listTasks, type Task } from './tasks';
 import { direction, eventLabel, messages, statusLabel, type Locale } from './i18n/messages';
 
 type ErrorKey = 'loadError' | 'projectError' | 'agentError' | 'taskError' | 'completeError';
@@ -18,6 +18,7 @@ export function App() {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [events, setEvents] = useState<ActivityEvent[]>([]);
+  const [readyTasks, setReadyTasks] = useState<Task[]>([]);
   const [error, setError] = useState<ErrorKey | null>(null);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -44,10 +45,10 @@ export function App() {
     setHealth(state);
     if (state === 'ready') {
       try {
-        const [projectList, agentList, taskList, activity] = await Promise.all([listProjects(), listAgents(), listTasks(), listEvents()]);
-        setProjects(projectList); setAgents(agentList); setTasks(taskList); setEvents(activity);
+        const [projectList, agentList, taskList, activity, readyList] = await Promise.all([listProjects(), listAgents(), listTasks(), listEvents(), listReadyTasks()]);
+        setProjects(projectList); setAgents(agentList); setTasks(taskList); setEvents(activity); setReadyTasks(readyList);
       } catch { setError('loadError'); }
-    } else { setProjects([]); setAgents([]); setTasks([]); setEvents([]); }
+    } else { setProjects([]); setAgents([]); setTasks([]); setEvents([]); setReadyTasks([]); }
   }
   useEffect(() => { void refresh(); }, []);
 
@@ -116,6 +117,9 @@ export function App() {
       <h3>{t.details}</h3>
       <label>{t.selectTask}<select value={selectedTask} onChange={e => setSelectedTask(e.target.value)}><option value="">{t.chooseTask}</option>{tasks.map(task => <option key={task.id} value={task.id}>{task.title} (#{task.id})</option>)}</select></label>
       {tasks.find(task => String(task.id) === selectedTask) && <><TaskAssignment key={`assignment-${selectedTask}`} task={tasks.find(task => String(task.id) === selectedTask)!} agents={agents} locale={locale} onChanged={refresh} /><TaskDetails key={selectedTask} task={tasks.find(task => String(task.id) === selectedTask)!} tasks={tasks} locale={locale} onChanged={refresh} /></>}
+    </section>
+    <section aria-labelledby="ready-tasks-heading"><h2 id="ready-tasks-heading">{t.readyTasks}</h2><p>{t.readyTasksHelp}</p>
+      {readyTasks.length ? <ul>{readyTasks.map(task => <li key={task.id}><bdi>{task.title}</bdi> · <bdi>#{task.id}</bdi> · <bdi>{projects.find(project => project.id === task.project_id)?.name ?? `#${task.project_id}`}</bdi></li>)}</ul> : <p>{t.noReadyTasks}</p>}
     </section>
     <section aria-labelledby="activity-heading"><h2 id="activity-heading">{t.activity}</h2><p>{t.activityHelp}</p>
       {events.length ? <ul>{events.map(event => <li key={event.id}>{eventLabel(locale, event.event_type)} · <bdi>{event.created_at}</bdi>{event.task_id !== null && <> · <bdi>#{event.task_id}</bdi></>}</li>)}</ul> : <p>{t.noActivity}</p>}

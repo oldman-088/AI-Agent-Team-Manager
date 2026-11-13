@@ -3,10 +3,11 @@ from typing import Annotated
 from fastapi import APIRouter, HTTPException, Path, Query, Response
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import aliased
 
 from app.api.projects import Db
 from app.api.dependencies import lock_project
-from app.models import Project, Task, TaskDependency
+from app.models import Project, Task, TaskAssignment, TaskDependency
 from app.schemas import TaskCreate, TaskReadiness, TaskUpdate, TaskView
 from app.services.activity import record_event
 
@@ -30,6 +31,25 @@ def list_tasks(db: Db, project_id: ProjectQuery = None, limit: int = 100, offset
     if project_id is not None:
         statement = statement.where(Task.project_id == project_id)
     return list(db.scalars(statement))
+
+
+@router.get('/ready', response_model=list[TaskView])
+def list_ready_tasks(db: Db, project_id: ProjectQuery = None, assigned_only: bool = False,
+                     limit: int = 100, offset: int = 0) -> list[Task]:
+    """Snapshot only: neither reserves work nor starts a worker."""
+    if not 1 <= limit <= 100 or not 0 <= offset <= 1000000:
+        raise HTTPException(status_code=422, detail='Invalid pagination')
+    prerequisite = aliased(Task)
+    blockers = (select(TaskDependency.task_id)
+                .join(prerequisite, prerequisite.id == TaskDependency.depends_on_id)
+                .where(TaskDependency.task_id == Task.id, prerequisite.status != 'completed')
+                .exists())
+    statement = select(Task).where(Task.status == 'pending', ~blockers)
+    if project_id is not None:
+        statement = statement.where(Task.project_id == project_id)
+    if assigned_only:
+        statement = statement.where(select(TaskAssignment.task_id).where(TaskAssignment.task_id == Task.id).exists())
+    return list(db.scalars(statement.order_by(Task.id).limit(limit).offset(offset)))
 
 
 @router.post('', response_model=TaskView, status_code=201)

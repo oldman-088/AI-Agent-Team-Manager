@@ -1,6 +1,6 @@
 # Workflow report
 
-Last updated: 2026-11-13T18:24:52+00:00
+Last updated: 2026-11-13T18:28:41+00:00
 
 ## Completion indicator
 
@@ -31,3 +31,7 @@ Added one planning assignment per task with project-scoped database foreign keys
 ## Terminal unassignment and concurrency checkpoint
 
 Assignments can now be removed from completed or cancelled tasks without deleting them; adding or changing an agent still requires a pending task. Added a concurrent assignment-versus-agent-move test. SQLite backend tests (11), frontend typecheck, 15 tests and build passed locally; npm audit found zero vulnerabilities. All PR checks passed at `4158e99`: [PostgreSQL race](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43482199909), [Chromium unassignment](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43482200327), [frontend](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43482199956), [prototype matrix](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43482199947) and [CodeQL](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43482200332). Later commits need separate verification. This is still planning only, not execution. Acceptance remains 4/30.
+
+## Ready planning task snapshot checkpoint
+
+Added a read-only ready task query with project and assignment filters and bounded offset pagination, plus localized dashboard display. It is a snapshot, not an execution queue or reservation; completion rechecks under the project lock. SQLite backend tests (11), frontend typecheck, 16 tests and build passed locally; npm audit zero vulnerabilities. PostgreSQL and Chromium CI pending. Acceptance remains 4/30.
