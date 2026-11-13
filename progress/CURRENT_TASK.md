@@ -1,3 +1,3 @@
 # Current task
 
-Verify task CRUD and migration on PostgreSQL CI, then continue provider research and safe execution design.
+Continue provider research and safe execution design. PostgreSQL task tests, frontend, prototype matrix and CodeQL passed at `e1e334d`.
