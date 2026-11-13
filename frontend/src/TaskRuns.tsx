@@ -1,3 +1,4 @@
+import { apiFetch } from './api';
 import { useEffect, useState } from 'react';
 import { messages, type Locale } from './i18n/messages';
 
@@ -10,7 +11,7 @@ export function TaskRuns({taskId, locale, refreshVersion}: {taskId: number; loca
   useEffect(() => {
     let active = true;
     setRuns(null); setError(false);
-    fetch(`/api/tasks/${taskId}/runs`).then(response => {
+    apiFetch(`/api/tasks/${taskId}/runs`).then(response => {
       if (!response.ok) throw new Error('Cannot load runs');
       return response.json();
     }).then(data => { if (active) setRuns(data); }).catch(() => { if (active) setError(true); });

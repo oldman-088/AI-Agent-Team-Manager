@@ -27,3 +27,5 @@ The ready planning tasks panel lists up to the first 100 pending tasks with comp
 The selected task's text-run history shows database metadata from the manual local CLI, not a process lifecycle or proof of task completion. Refresh to see external changes; only the first 100 newest runs are shown. The dashboard cannot start workers, configure models or display returned text.
 
 Run-history heartbeat states are advisory snapshots, not proof of process health or safety to retry. Refresh to update; unknown and stale states do not release a claim.
+
+If the backend has the optional `AATM_API_TOKEN` configured, enter that local token in the API access field. It is held in page memory, sent only on relative `/api` requests, and cleared on reload; leaving the field blank and applying it removes it. Do not enter `OPENAI_API_KEY` in this field. The UI status only reports that a token is in memory, not that it is valid. This optional shared secret is not a user account or complete authorization system.

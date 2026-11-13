@@ -1,7 +1,8 @@
+import { setApiToken } from './api';
 import { TaskRuns } from './TaskRuns';
 import { TaskAssignment } from './TaskAssignment';
 import { TaskDetails } from './TaskDetails';
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { fetchHealth, type Health } from './health';
 import { createProject, listProjects, type Project } from './projects';
 import { createAgent, listAgents, type Agent } from './agents';
@@ -21,6 +22,9 @@ export function App() {
   const [events, setEvents] = useState<ActivityEvent[]>([]);
   const [readyTasks, setReadyTasks] = useState<Task[]>([]);
   const [error, setError] = useState<ErrorKey | null>(null);
+  const [tokenInput, setTokenInput] = useState('');
+  const [tokenConfigured, setTokenConfigured] = useState(false);
+  const refreshSequence = useRef(0);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [agentName, setAgentName] = useState('');
@@ -40,19 +44,31 @@ export function App() {
   }, [locale]);
 
   async function refresh() {
+    const sequence = ++refreshSequence.current;
     setHealth('checking');
     setError(null);
     const state = await fetchHealth();
+    if (sequence !== refreshSequence.current) return;
     setHealth(state);
     if (state === 'ready') {
       try {
         const [projectList, agentList, taskList, activity, readyList] = await Promise.all([listProjects(), listAgents(), listTasks(), listEvents(), listReadyTasks()]);
+        if (sequence !== refreshSequence.current) return;
         setProjects(projectList); setAgents(agentList); setTasks(taskList); setEvents(activity); setReadyTasks(readyList);
-      } catch { setError('loadError'); }
+      } catch {
+        if (sequence !== refreshSequence.current) return;
+        setProjects([]); setAgents([]); setTasks([]); setEvents([]); setReadyTasks([]); setError('loadError');
+      }
     } else { setProjects([]); setAgents([]); setTasks([]); setEvents([]); setReadyTasks([]); }
   }
   useEffect(() => { void refresh(); }, []);
 
+  function submitToken(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setApiToken(tokenInput); setTokenConfigured(Boolean(tokenInput)); setTokenInput('');
+    setProjects([]); setAgents([]); setTasks([]); setEvents([]); setReadyTasks([]); setSelectedTask('');
+    void refresh();
+  }
   async function submitProject(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); setSaving(true); setError(null);
     try { await createProject(name, description); setName(''); setDescription(''); await refresh(); }
@@ -90,6 +106,7 @@ export function App() {
     <section aria-labelledby="status-heading"><h2 id="status-heading">{t.system}</h2>
       <p role="status">{t.backend}: <strong>{health === 'ready' ? t.ready : health === 'checking' ? t.checking : t.notReady}</strong></p>
       <button onClick={() => void refresh()}>{t.refresh}</button><p>{t.readiness}</p>
+      <p>{t.tokenHelp}</p><form onSubmit={submitToken}><label>{t.apiToken}<input type="password" autoComplete="off" value={tokenInput} onChange={e => setTokenInput(e.target.value)} maxLength={256} /></label><button>{t.applyToken}</button></form><p>{tokenConfigured ? t.tokenSet : t.tokenUnset}</p>
     </section>
     <section aria-labelledby="projects-heading"><h2 id="projects-heading">{t.projects}</h2><p>{t.projectsHelp}</p>
       <form onSubmit={submitProject}>

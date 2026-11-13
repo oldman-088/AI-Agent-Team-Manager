@@ -1,12 +1,20 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
+
+const testToken = 'e2e_' + 'a'.repeat(40);
+async function authenticate(page: Page) {
+  await page.getByLabel('Local API access token').fill(testToken);
+  await page.getByRole('button', {name: 'Apply token or clear'}).click();
+}
 
 test('create records and switch language with RTL and keyboard access', async ({page}) => {
   const rejected = await page.request.post('/api/projects', {
-    headers: {'Origin': 'https://evil.example'}, data: {name: 'Cross-origin test'},
+    headers: {'Origin': 'https://evil.example', 'Authorization': `Bearer ${testToken}`}, data: {name: 'Cross-origin test'},
   });
   expect(rejected.status()).toBe(403);
+  expect((await page.request.get('/api/tasks')).status()).toBe(401);
   await page.goto('/');
   await expect(page.getByRole('status')).toContainText('Ready');
+  await authenticate(page);
 
   await page.getByLabel('Project name').fill('مشروع AATM');
   await page.getByLabel('Description').fill('Browser test');
@@ -60,6 +68,7 @@ test('create records and switch language with RTL and keyboard access', async ({
 test('manage task dependencies and inspect readiness', async ({page}) => {
   await page.goto('/');
   await expect(page.getByRole('status')).toContainText('Ready');
+  await authenticate(page);
   await page.getByLabel('Project name').fill('Dependencies project');
   await page.getByRole('button', {name: 'Create project'}).click();
   await page.getByLabel('Agent name').fill('Planner');
@@ -83,6 +92,8 @@ test('manage task dependencies and inspect readiness', async ({page}) => {
   await page.getByRole('button', {name: 'Save assignment'}).click();
   await expect(page.getByRole('region', {name: 'Recent task activity'}).locator('li').first()).toContainText('Task assigned for planning');
   await page.reload();
+  await expect(page.getByRole('alert')).toContainText('Could not load data');
+  await authenticate(page);
   await page.getByLabel('Select task').selectOption(consumer!);
   await expect(assignment.locator('option:checked')).toContainText('Planner');
   await page.getByRole('combobox', {name: 'Prerequisite', exact: true}).selectOption({index: 1});

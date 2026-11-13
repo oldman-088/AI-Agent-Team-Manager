@@ -32,7 +32,7 @@ def create_app(settings: Settings | None = None, engine_factory: Callable[[str],
                 application.state.engine.dispose()
 
     application = FastAPI(title="AATM API", version="0.1.0", lifespan=lifespan)
-    application.add_middleware(LocalGuard)
+    application.add_middleware(LocalGuard, api_token=settings.api_token)
     application.include_router(projects_router)
     application.include_router(agents_router)
     application.include_router(tasks_router)

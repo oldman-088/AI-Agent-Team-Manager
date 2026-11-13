@@ -1,6 +1,6 @@
 # Workflow report
 
-Last updated: 2026-11-13T19:02:43+00:00
+Last updated: 2026-11-13T19:05:02+00:00
 
 ## Completion indicator
 
@@ -59,3 +59,7 @@ Added nullable heartbeat timestamps, periodic best-effort updates during the loc
 ## Shared worker capacity checkpoint
 
 Added a shared lock for application worker claims, enforcing at most 20 unresolved runs and one unresolved run per agent. Uncertain runs retain capacity; the agent rule is additionally enforced by a partial unique index. Migration 0011 refuses existing duplicate unresolved runs and blocks downgrade with unresolved runs. Local SQLite tests (22) include competing claims at the cap and legacy migration guards; All PR checks passed at `fa0b56e`, including [PostgreSQL capacity/concurrency and migration](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43488238616), [browser](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43488239029) and [CodeQL](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43488238622). Subsequent commits need separate verification. Direct SQL and accidental resolution of a live process can bypass intended safety; no monetary budget, authenticated control or sandbox exists. Acceptance remains 4/30.
+
+## Optional local API access gate checkpoint
+
+Researched fastapi-users, Authlib and Starlette; added an optional local shared bearer gate, plus in-memory-only frontend token input. Default remains unauthenticated; an explicitly invalid or empty token fails startup. Health and schema remain public, and direct DB workers bypass this HTTP gate. This is not per-user identity, RBAC, rate limiting, TLS or production security. Backend 26 tests and frontend 18 tests/typecheck/build passed locally; npm audit zero. Dedicated browser tests use an isolated database and test-only token. Authenticated browser and PostgreSQL/CodeQL CI pending. Acceptance remains 4/30.
