@@ -1,9 +1,9 @@
 {
-  "last_updated_utc": "2026-11-13T17:14:37+00:00",
+  "last_updated_utc": "2026-11-13T17:18:44+00:00",
   "overall_completion_percentage": null,
   "completion_note": "Total project effort completion unknown. The acceptance-criteria indicator is conservative and equally weighted; it is not an estimate of effort or delivery date.",
   "current_phase": "Phases 0–4 and partial Phase 10 in progress",
-  "current_task": "Verify Playwright E2E workflow in GitHub Actions",
+  "current_task": "Re-run browser E2E in CI after proxy fix",
   "completed_tasks": [
     "Inspected repository, branches, permissions and local tools",
     "Researched candidate repositories and documented preliminary findings",
@@ -88,15 +88,25 @@
     {
       "command": "python scripts/check_docs.py; git diff --check",
       "result": "Passed before report update"
+    },
+    {
+      "command": "Local disposable backend + Vite proxy HTTP smoke test",
+      "result": "After proxy fix GET readiness returned 200 and same-origin POST created a project (201)"
+    },
+    {
+      "command": "npm run typecheck && npm test && npm run build && npm audit --audit-level=high",
+      "result": "Passed; 12 frontend tests, no npm audit vulnerabilities"
     }
   ],
-  "build_status": "Local frontend build passed; new GitHub Actions browser test pending.",
+  "build_status": "Earlier browser CI failed; proxy fix verified by local HTTP smoke test. New browser CI pending.",
   "errors_encountered": [
     "Initial E2E attempt used incorrect virtualenv PATH and could not import uvicorn.",
-    "Second E2E attempt started servers but failed because Chromium was not installed locally."
+    "Second E2E attempt started servers but failed because Chromium was not installed locally.",
+    "GitHub browser E2E failed creating a project: Vite proxy changed Host, conflicting with backend same-origin protection. GitHub log download blocked; failure details obtained via CI annotations."
   ],
   "fixes_implemented": [
-    "Corrected virtualenv PATH; browser binary remains unavailable locally. CI installs Chromium."
+    "Corrected virtualenv PATH; browser binary remains unavailable locally. CI installs Chromium.",
+    "Configured Vite to preserve the original Host; locally verified a same-origin proxied POST returns 201. Added cross-origin rejection check to E2E."
   ],
   "blockers": [
     "No project license selected",

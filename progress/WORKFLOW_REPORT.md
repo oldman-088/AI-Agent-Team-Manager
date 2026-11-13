@@ -1,6 +1,6 @@
 # Workflow report
 
-Last updated: 2026-11-13T17:14:37+00:00
+Last updated: 2026-11-13T17:18:44+00:00
 
 ## Completion indicator
 
@@ -14,7 +14,7 @@ Added a Playwright E2E workflow for the existing dashboard, checking project/age
 
 - Frontend typecheck, 12 unit/DOM tests and build passed; npm audit found zero vulnerabilities. Playwright listed one test.
 - First local E2E attempt used an incorrect virtualenv PATH; fixed the invocation. A second attempt started both servers but failed because the Chromium executable is absent locally. No real-browser success has been verified yet.
-- Backend editable install, docs inventory and `git diff --check` passed. New browser CI is pending; earlier checks passed at `1799a05`.
+- Backend editable install, docs inventory and `git diff --check` passed. The first browser CI failed creating a project. Diagnostics showed the Vite proxy changed the Host and the backend rejected the Origin. Configured the proxy to preserve Host; a local same-origin POST returned 201. A new browser CI run is pending. Earlier checks passed at `1799a05`.
 
 ## Blockers and next actions
 

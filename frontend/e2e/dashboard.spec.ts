@@ -1,6 +1,10 @@
 import { expect, test } from '@playwright/test';
 
 test('create records and switch language with RTL and keyboard access', async ({page}) => {
+  const rejected = await page.request.post('/api/projects', {
+    headers: {'Origin': 'https://evil.example'}, data: {name: 'Cross-origin test'},
+  });
+  expect(rejected.status()).toBe(403);
   await page.goto('/');
   await expect(page.getByRole('status')).toContainText('Ready');
 
@@ -35,9 +39,7 @@ test('create records and switch language with RTL and keyboard access', async ({
   await expect(input).toBeFocused();
   await page.keyboard.press('Tab');
   await expect(page.getByLabel('الوصف')).toBeFocused();
-  const direction = await input.evaluate(element => getComputedStyle(element).direction);
-  // dir=auto on an empty input may be LTR; check inherited section direction instead.
-  expect(['ltr', 'rtl']).toContain(direction);
+  // The section inherits RTL; user-entered input uses dir=auto.
   await expect(page.getByRole('region', {name: 'المشاريع'})).toHaveCSS('direction', 'rtl');
 
   await page.getByLabel('اللغة').selectOption('fa');
