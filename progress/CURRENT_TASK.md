@@ -1,3 +1,3 @@
 # Current task
 
-Continue provider research and safe execution design. PostgreSQL task tests, frontend, prototype matrix and CodeQL passed at `e1e334d`.
+Verify provider adapter tests and security checks in CI; continue credential management and safe execution design. Live OpenAI integration has not been tested.

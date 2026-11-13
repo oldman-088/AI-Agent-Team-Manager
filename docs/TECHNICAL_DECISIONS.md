@@ -12,3 +12,7 @@
 ## 2026-11-13: Planning tasks before execution
 
 A small Phase 4 planning-task slice is implemented in parallel with unfinished Phases 0–3 because it is independently useful and requires no provider credentials or unsafe execution. This does not skip or complete those phases. Only pending/cancelled states exist; assignment, dependency scheduling, execution and review are deliberately deferred until their safety and concurrency invariants are designed. Project deletion is restricted while tasks exist to avoid silent loss.
+
+## 2026-11-13: Narrow provider interface
+
+Adopt the official OpenAI Python SDK behind a small asynchronous text-completion protocol. Provider credentials are passed explicitly by the caller and are not stored; output token count is bounded, SDK retries disabled and upstream error details suppressed. `store=false` is requested but does not establish a complete retention guarantee. This is a library-level integration only, not an exposed API, credential manager, agent execution system or live-tested provider. Streaming, tools, model discovery and costs remain future work. Other provider SDKs remain candidates.

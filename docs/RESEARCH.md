@@ -19,3 +19,15 @@ Snapshot: 2026-11-13 UTC. Sources: linked repository metadata and README via Git
 ## Other decisions still requiring research
 
 Official model-provider SDKs and PostgreSQL access/migration libraries will be assessed against exact supported releases before implementation. Provider capabilities, pricing and credential handling vary; no undocumented Arena Local Bridge API is assumed. No third-party runtime integrations are implemented or validated in this phase.
+
+## Provider SDK review (2026-11-13)
+
+GitHub repository metadata and READMEs were reviewed. All three repositories were non-archived and pushed within three days of this snapshot; dates do not guarantee long-term maintenance. Repository-level Apache-2.0 identifiers are preliminary and do not substitute for a transitive license or security audit.
+
+| Official SDK | Architecture / tradeoff | Decision |
+|---|---|---|
+| [openai-python](https://github.com/openai/openai-python) | Async Python client and Responses API; remote data and paid requests, SDK dependencies and rate limits cross a trust boundary. | Adopt behind a narrow AATM interface for text-only requests. Tests use a mock transport; no live credentials or requests verified. No retries, tools, streaming, cost estimates or automatic execution. |
+| [anthropic-sdk-python](https://github.com/anthropics/anthropic-sdk-python) | Official Python messages API; repository README notes license history differs across versions. | Defer pending exact-version and transitive license review and independent adapter tests. |
+| [python-genai](https://github.com/googleapis/python-genai) | Official Google Gen AI SDK with synchronous and asynchronous model APIs. | Defer; assess API modes, authentication, data handling and dependency licensing before adoption. |
+
+Even `store=false` is not a guarantee that a provider retains no data for every operational or legal purpose. Never send secrets or private project content without appropriate consent and policy. Provider credentials must not be stored in agent configuration or logs. Public network calls have not been executed or validated here.

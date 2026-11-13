@@ -1,9 +1,9 @@
 {
-  "last_updated_utc": "2026-11-13T17:02:28+00:00",
+  "last_updated_utc": "2026-11-13T17:06:36+00:00",
   "overall_completion_percentage": null,
-  "completion_note": "Unknown: full specification is broad and not yet decomposed into weighted verifiable tasks. Do not extrapolate from the prototype.",
-  "current_phase": "Phases 0, 1, 2 and planning slice of 4 \u2014 In Progress",
-  "current_task": "Research provider SDKs and safe execution interfaces",
+  "completion_note": "Total project effort completion unknown. The acceptance-criteria indicator is conservative and equally weighted; it is not an estimate of effort or delivery date.",
+  "current_phase": "Phases 0–4 in progress, with partial planning work only in phase 4",
+  "current_task": "Verify OpenAI adapter tests and security checks in CI",
   "completed_tasks": [
     "Inspected repository, branches, permissions and local tools",
     "Researched candidate repositories and documented preliminary findings",
@@ -21,38 +21,39 @@
     "Added agent registry migration and SQLite foreign key enforcement",
     "Added basic agent creation and list UI",
     "Added project-scoped planning tasks API, migration and frontend creation/listing",
-    "Restricted project deletion when tasks exist"
+    "Restricted project deletion when tasks exist",
+    "Added official OpenAI SDK adapter and provider protocol; tests use mocks only",
+    "Added Arabic acceptance progress report and weighted calculation",
+    "Ran local backend and frontend startup smoke checks",
+    "Audited local Python environment and upgraded vulnerable tooling"
   ],
   "in_progress_tasks": [
-    "Design provider integration, lifecycle and safe orchestration",
+    "Verify provider tests and GitHub checks",
+    "Implement secure credential management and live provider verification",
     "Complete dependency and license review"
   ],
   "pending_tasks": [
     "Full project and agent management",
     "Provider integrations and execution",
     "Authentication and production security",
-    "Browser sessions and other phases 2\u201311",
+    "Browser sessions and other phases 2–11",
     "Browser end-to-end testing"
   ],
   "files_created": [
-    "backend/alembic/versions/0004_tasks.py",
-    "backend/app/api/tasks.py",
-    "frontend/src/tasks.ts",
-    "frontend/src/tasks.test.ts"
+    "backend/app/providers/__init__.py",
+    "backend/app/providers/base.py",
+    "backend/app/providers/openai_adapter.py",
+    "backend/tests/test_providers.py",
+    "progress/تقرير_التقدم.md"
   ],
   "files_modified": [
-    "backend/app/models.py",
-    "backend/app/main.py",
-    "backend/app/schemas.py",
-    "backend/app/api/projects.py",
-    "backend/tests/test_foundation.py",
+    "backend/pyproject.toml",
     "backend/README.md",
-    "frontend/src/main.tsx",
-    "frontend/README.md",
     "README.md",
+    "docs/RESEARCH.md",
     "docs/ROADMAP.md",
-    "docs/ARCHITECTURE.md",
     "docs/TECHNICAL_DECISIONS.md",
+    "docs/THIRD_PARTY_DEPENDENCIES.md",
     "progress/WORKFLOW_REPORT.md",
     "progress/WORKFLOW_REPORT.json",
     "progress/PROJECT_STATUS.md",
@@ -62,44 +63,46 @@
   ],
   "tests_executed": [
     {
-      "command": "cd backend && pytest -v",
-      "result": "3 passed locally including SQLite migration, task CRUD, cancellation and protected project deletion; Starlette httpx deprecation warning"
+      "command": "cd backend && pytest -q",
+      "result": "11 passed on Linux including official OpenAI SDK mock HTTP transport; no real provider call; one Starlette deprecation warning"
     },
     {
-      "command": "cd frontend && npm run typecheck && npm test && npm run build",
-      "result": "Passed; 8 tests and Vite build"
+      "command": "Local Uvicorn and Vite process startup HTTP smoke checks",
+      "result": "Both returned HTTP 200 on Linux; no browser test"
     },
     {
-      "command": "cd frontend && npm audit --audit-level=high",
-      "result": "0 vulnerabilities"
+      "command": ".venv/bin/pip-audit",
+      "result": "No known vulnerabilities after upgrading pip and setuptools; local editable package skipped"
     },
     {
-      "command": "python -m unittest discover -s tests -v",
-      "result": "2 passed"
-    },
-    {
-      "command": "python scripts/check_docs.py; python -m compileall -q backend/app backend/tests; git diff --check",
-      "result": "Passed before report update"
-    },
-    {
-      "command": "GitHub Actions PR checks at e1e334d",
-      "result": "All passed: PostgreSQL migration and task CRUD, frontend, prototype matrix, CodeQL"
+      "command": "Previous CI at e1e334d",
+      "result": "PostgreSQL, frontend, prototype and CodeQL passed; current commit not yet verified"
     }
   ],
-  "build_status": "All PR checks passed at e1e334d; later commits require their own checks.",
+  "build_status": "Previous frontend build and CI passed; current provider changes require CI verification.",
   "errors_encountered": [
-    "Starlette TestClient httpx deprecation warning"
+    "Initial local pip-audit identified vulnerable old pip and setuptools; one Starlette httpx deprecation warning persists."
   ],
-  "fixes_implemented": [],
+  "fixes_implemented": [
+    "Upgraded local virtual-environment pip and setuptools and repeated audit successfully; editable project skipped by audit."
+  ],
   "blockers": [
-    "No project license selected",
-    "PostgreSQL unavailable locally; task tests passed on PostgreSQL CI",
-    "Provider integration, execution, task dependencies, security and most platform features remain unimplemented"
+    "Project license not selected",
+    "Live provider authentication and integration not verified; no credentials used",
+    "Authentication, secure secret management, execution, browser E2E and most platform features unimplemented"
   ],
   "next_actions": [
-    "Implement provider adapters after SDK and security review",
-    "Design safe task dependency and execution semantics",
-    "Lock and audit Python dependencies"
+    "Verify provider adapter CI",
+    "Implement secure credential management and authorized provider test",
+    "Design safe task dependencies and agent lifecycle"
   ],
-  "estimated_remaining_work": "Most of the specified platform remains; reliable duration unknown."
+  "estimated_remaining_work": "26 of 30 acceptance criteria remain unverified; reliable time and effort estimates unavailable.",
+  "acceptance_criteria_completion_percentage": 13.3,
+  "acceptance_criteria_method": "4 of 30 equally weighted acceptance criteria, verified as binary items; partial criteria receive no credit. Criteria 2 and 3 were smoke-tested on Linux only; criteria 4 and 5 verified via PostgreSQL CI. Details in progress/تقرير_التقدم.md.",
+  "verified_acceptance_criteria": [
+    2,
+    3,
+    4,
+    5
+  ]
 }

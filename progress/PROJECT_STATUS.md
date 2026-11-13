@@ -1,3 +1,3 @@
 # Project status
 
-Phases 0–2 and an independent Phase 4 planning slice are in progress. Project, agent configuration and planning task records exist, but no agent execution or lifecycle exists. Overall completion is unknown. See `WORKFLOW_REPORT.md` and `docs/ROADMAP.md`; development reports are not operational database state.
+Phases 0–4 have partial work in progress. A conservative **13.3% acceptance-criteria verification** indicator counts 4 of 30 equally weighted criteria, not estimated effort. Details and the Arabic user-facing report: `تقرير_التقدم.md`. Operational database state is not stored in these reports.

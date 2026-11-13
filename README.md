@@ -36,4 +36,6 @@ No agent execution, LLM integration, workflow engine, integrations, authenticati
 
 ## Project direction
 
-The supplied AATM master specification defines the intended platform; this prototype implements only a small local task tracker, not that platform. See [architecture](docs/ARCHITECTURE.md), [research](docs/RESEARCH.md), [decisions](docs/TECHNICAL_DECISIONS.md), and [roadmap](docs/ROADMAP.md). The new Phase 1 foundations are separate from the prototype: see [backend](backend/README.md) and [frontend](frontend/README.md). PostgreSQL migrations require a configured database. The new frontend can create and list basic project, agent-configuration, and planning-task records; provider and agent integrations do not yet exist.
+The supplied AATM master specification defines the intended platform; this prototype implements only a small local task tracker, not that platform. See [architecture](docs/ARCHITECTURE.md), [research](docs/RESEARCH.md), [decisions](docs/TECHNICAL_DECISIONS.md), and [roadmap](docs/ROADMAP.md). The new Phase 1 foundations are separate from the prototype: see [backend](backend/README.md) and [frontend](frontend/README.md). PostgreSQL migrations require a configured database. The new frontend can create and list basic project, agent-configuration, and planning-task records; an OpenAI text adapter is implemented but not live-verified or connected to agent execution.
+
+للاطلاع على ما أُنجز ونسبة تحقق معايير القبول، راجع [تقرير التقدم بالعربية](progress/تقرير_التقدم.md).
