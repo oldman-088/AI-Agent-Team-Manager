@@ -1,3 +1,3 @@
 # Current task
 
-Verify migration 0008, planning assignments and UI in PostgreSQL and Chromium CI, then design authenticated audit and safe execution.
+Design authenticated audit and safe execution; expand assignment concurrency and accessibility testing. Assignment checks passed at `520f0ae`.

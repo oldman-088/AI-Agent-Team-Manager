@@ -1,6 +1,6 @@
 # Workflow report
 
-Last updated: 2026-11-13T18:17:50+00:00
+Last updated: 2026-11-13T18:19:24+00:00
 
 ## Completion indicator
 
@@ -26,4 +26,4 @@ Added localized task dependency inspection, addition and removal, and readiness 
 
 ## Planning assignment checkpoint
 
-Added one planning assignment per task with project-scoped database foreign keys, a manual API and localized UI. It does not start an agent. Only pending task assignments can be changed; assigned agents cannot move or be deleted. Terminal assignments currently remain until task deletion. Downgrade 0008 refuses to drop assignments. SQLite backend tests passed (11); frontend typecheck, 15 tests and build passed before final copy and E2E changes. PostgreSQL and Chromium CI pending. Acceptance remains 4/30.
+Added one planning assignment per task with project-scoped database foreign keys, a manual API and localized UI. It does not start an agent. Only pending task assignments can be changed; assigned agents cannot move or be deleted. Terminal assignments currently remain until task deletion. Downgrade 0008 refuses to drop assignments. SQLite backend tests passed (11); frontend typecheck, 15 tests and build passed before final copy and E2E changes. All PR checks passed at `520f0ae`: [PostgreSQL](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43481281322), [Chromium](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43481281202), [frontend](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43481281205), [prototype matrix](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43481281265) and [CodeQL](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43481281417). Later commits require separate verification. Acceptance remains 4/30.
