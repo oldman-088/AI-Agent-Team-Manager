@@ -1,6 +1,6 @@
 # Workflow report
 
-Last updated: 2026-11-13T18:58:38+00:00
+Last updated: 2026-11-13T19:01:29+00:00
 
 ## Completion indicator
 
@@ -54,4 +54,8 @@ Added an explicitly confirmed one-shot sequential batch for up to 20 previously 
 
 ## Advisory worker heartbeat checkpoint
 
-Added nullable heartbeat timestamps, periodic best-effort updates during the local text worker call and read-only freshness indicators. Heartbeats do not prove liveness; no automatic retry or claim release on stale or missing data. Downgrade 0010 guards recorded heartbeat data. Local backend 22 tests and frontend 17 tests, typecheck and build passed; npm audit found zero vulnerabilities. PostgreSQL migration, Chromium and CodeQL pending CI. No live provider call, authenticated lifecycle or automatic safe recovery. Acceptance remains 4/30.
+Added nullable heartbeat timestamps, periodic best-effort updates during the local text worker call and read-only freshness indicators. Heartbeats do not prove liveness; no automatic retry or claim release on stale or missing data. Downgrade 0010 guards recorded heartbeat data. Local backend 22 tests and frontend 17 tests, typecheck and build passed; npm audit found zero vulnerabilities. All PR checks passed at `6e0950e`, including [PostgreSQL heartbeat migration](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43487775265), [Chromium](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43487775024) and [CodeQL](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43487775099). No live provider call, authenticated lifecycle or automatic safe recovery. Acceptance remains 4/30.
+
+## Shared worker capacity checkpoint
+
+Added a shared lock for application worker claims, enforcing at most 20 unresolved runs and one unresolved run per agent. Uncertain runs retain capacity; the agent rule is additionally enforced by a partial unique index. Migration 0011 refuses existing duplicate unresolved runs and blocks downgrade with unresolved runs. Local SQLite tests (22) include competing claims at the cap and legacy migration guards; PostgreSQL and full CI pending. Direct SQL and accidental resolution of a live process can bypass intended safety; no monetary budget, authenticated control or sandbox exists. Acceptance remains 4/30.

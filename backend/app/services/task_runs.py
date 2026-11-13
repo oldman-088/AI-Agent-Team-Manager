@@ -3,13 +3,13 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 
 from fastapi import HTTPException
-from sqlalchemy import func, select, update
+from sqlalchemy import func, select, text, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.api.dependencies import lock_project
 from app.api.tasks import blocking_dependencies
-from app.models import Agent, Project, TaskAssignment, TaskRun
+from app.models import Agent, Project, TaskAssignment, TaskRun, WorkerCapacityLock
 from app.providers.base import CompletionRequest, CompletionResult
 
 
@@ -25,8 +25,22 @@ class PreparedRun:
 
 def prepare_run(db: Session, task_id: int, *, first_run_only: bool = False, project_id: int | None = None) -> PreparedRun:
     """Claim a pending, ready, assigned task while holding the project lock."""
+    # Serialize all claims before taking the project lock. SQLite uses its
+    # database-level write lock; PostgreSQL locks the singleton row.
+    dialect = db.get_bind().dialect.name
+    if dialect == 'sqlite':
+        db.execute(text('BEGIN IMMEDIATE'))
+        if db.get(WorkerCapacityLock, 1) is None:
+            raise RunRejected('Worker capacity lock is not initialized')
+    elif dialect == 'postgresql':
+        if db.scalar(select(WorkerCapacityLock).where(WorkerCapacityLock.id == 1).with_for_update()) is None:
+            raise RunRejected('Worker capacity lock is not initialized')
+    else:
+        raise RunRejected('Unsupported database for worker claims')
+    if db.scalar(select(func.count()).select_from(TaskRun).where(TaskRun.status.in_(['running', 'uncertain']))) >= 20:
+        raise RunRejected('Worker capacity reached; investigate unresolved runs')
     try:
-        task = lock_project(db, task_id)
+        task = lock_project(db, task_id, sqlite_write_locked=(dialect == 'sqlite'))
     except HTTPException as exc:
         raise RunRejected('Task unavailable') from exc
     if project_id is not None and task.project_id != project_id:
@@ -43,6 +57,8 @@ def prepare_run(db: Session, task_id: int, *, first_run_only: bool = False, proj
     agent = db.get(Agent, assignment.agent_id) if assignment else None
     if agent is None or agent.project_id != task.project_id:
         raise RunRejected('Task requires an agent assigned to the same project')
+    if db.scalar(select(TaskRun.id).where(TaskRun.agent_id == agent.id, TaskRun.status.in_(['running', 'uncertain'])).limit(1)) is not None:
+        raise RunRejected('Assigned agent has an unresolved run')
     if agent.provider.strip().lower() != 'openai':
         raise RunRejected('Assigned agent must explicitly use provider openai')
     # Snapshot database content before external call. No tools or privileged instructions.

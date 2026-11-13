@@ -86,6 +86,9 @@ class TaskRun(Base):
         Index('uq_task_runs_active_task', 'task_id', unique=True,
               sqlite_where=text("status IN ('running', 'uncertain')"),
               postgresql_where=text("status IN ('running', 'uncertain')")),
+        Index('uq_task_runs_active_agent', 'agent_id', unique=True,
+              sqlite_where=text("status IN ('running', 'uncertain')"),
+              postgresql_where=text("status IN ('running', 'uncertain')")),
     )
     id: Mapped[int] = mapped_column(primary_key=True)
     task_id: Mapped[int] = mapped_column(ForeignKey('tasks.id', ondelete='RESTRICT'), nullable=False)
@@ -97,3 +100,10 @@ class TaskRun(Base):
     finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     input_tokens: Mapped[int | None] = mapped_column(nullable=True)
     output_tokens: Mapped[int | None] = mapped_column(nullable=True)
+
+
+class WorkerCapacityLock(Base):
+    """Singleton mutex row; not a counter or a lease."""
+    __tablename__ = 'worker_capacity_lock'
+    __table_args__ = (CheckConstraint('id = 1', name='ck_worker_capacity_singleton'),)
+    id: Mapped[int] = mapped_column(primary_key=True)

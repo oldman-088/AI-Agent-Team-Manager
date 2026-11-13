@@ -1,9 +1,9 @@
 {
-  "last_updated_utc": "2026-11-13T18:58:38+00:00",
+  "last_updated_utc": "2026-11-13T19:01:29+00:00",
   "overall_completion_percentage": null,
   "completion_note": "Total project effort completion unknown. The acceptance-criteria indicator is conservative and equally weighted; it is not an estimate of effort or delivery date.",
   "current_phase": "Phases 0–4 and partial Phase 10 in progress",
-  "current_task": "Verify worker heartbeats and migration in CI",
+  "current_task": "Verify shared worker capacity and migration in PostgreSQL CI",
   "completed_tasks": [
     "Inspected repository, branches, permissions and local tools",
     "Researched candidate repositories and documented preliminary findings",
@@ -48,11 +48,12 @@
     "Added explicit opt-in local one-shot provider text CLI with mocked tests",
     "Added manual assigned-task text execution with durable run metadata, mocked tests and run history UI",
     "Added opt-in bounded sequential scheduling for unattempted ready assigned tasks",
-    "Added advisory local worker heartbeat and visibility without automatic retry"
+    "Added advisory local worker heartbeat and visibility without automatic retry",
+    "Implemented shared 20-unresolved-run and one-per-agent claim limits"
   ],
   "in_progress_tasks": [
-    "Verify heartbeat migration and worker observation on PostgreSQL and browser CI",
-    "Implement authenticated lifecycle and safe recovery"
+    "Verify 20-slot concurrency, per-agent uniqueness and upgrade guards on PostgreSQL",
+    "Implement authenticated control and durable safe recovery"
   ],
   "pending_tasks": [
     "Full project and agent management",
@@ -62,19 +63,14 @@
     "Browser end-to-end testing"
   ],
   "files_created": [
-    "backend/alembic/versions/0010_run_heartbeats.py"
+    "backend/alembic/versions/0011_worker_capacity.py"
   ],
   "files_modified": [
     "backend/app/models.py",
-    "backend/app/api/task_runs.py",
+    "backend/app/api/dependencies.py",
     "backend/app/services/task_runs.py",
-    "backend/app/task_worker.py",
     "backend/tests/test_foundation.py",
     "backend/README.md",
-    "frontend/src/TaskRuns.tsx",
-    "frontend/src/TaskRuns.test.tsx",
-    "frontend/src/i18n/messages.ts",
-    "frontend/README.md",
     "docs/TECHNICAL_DECISIONS.md",
     "progress/تقرير_التقدم.md",
     "progress/WORKFLOW_REPORT.md",
@@ -85,40 +81,33 @@
   ],
   "tests_executed": [
     {
-      "command": "gh pr checks 4 --watch at 7af079b",
-      "result": "All passed, including PostgreSQL scheduler tests and CodeQL; mocked provider only"
+      "command": "gh pr checks 4 --watch at 6e0950e",
+      "result": "All passed: PostgreSQL heartbeat migration and mocked worker, Chromium, frontend, prototype matrix and CodeQL"
     },
     {
       "command": "cd backend && pytest -q",
-      "result": "22 passed on SQLite including heartbeat updates, stale/unknown states, lifecycle and migration guards; mocked provider only"
-    },
-    {
-      "command": "cd frontend && npm run typecheck && npm test && npm run build",
-      "result": "17 frontend tests passed and build succeeded"
-    },
-    {
-      "command": "cd frontend && npm audit --audit-level=high",
-      "result": "0 vulnerabilities"
+      "result": "22 passed on SQLite including 20-slot concurrent race, per-agent unique index, upgrade duplicate guard and downgrade guard; mocked provider; Starlette deprecation warning"
     }
   ],
-  "build_status": "Heartbeat PostgreSQL migration and Chromium/CodeQL CI pending",
+  "build_status": "Global capacity and migration CI pending",
   "errors_encountered": [
-    "Initial test expected old downgrade guard; new heartbeat guard correctly triggers first. Test now checks both safely in disposable DB.",
+    "New migration guard correctly blocked previous downgrade test; reordered tests to verify each guard.",
     "Starlette httpx deprecation warning persists."
   ],
   "fixes_implemented": [
-    "Added nullable heartbeat, guarded downgrade, best-effort update loop, advisory freshness and stale-run protections."
+    "Serialize claims globally, cap unresolved runs at 20, and enforce one unresolved run per agent in a database index."
   ],
   "blockers": [
     "No project license selected",
     "No live provider credentials or real network call verified",
-    "No authenticated API, global concurrency limits, process isolation, persistent scheduling or budget controls",
-    "Heartbeat is advisory; no automatic safe recovery or run retention management"
+    "No authenticated API, process isolation, persistent scheduling or budget controls",
+    "Capacity limits protect app claims only, not direct SQL or a mistakenly resolved live worker",
+    "No automatic safe recovery or run retention management"
   ],
   "next_actions": [
-    "Verify PostgreSQL and browser CI",
-    "Implement authenticated lifecycle, isolation and safe recovery",
-    "Add budget enforcement and global concurrency controls"
+    "Verify PostgreSQL and full GitHub CI",
+    "Implement authenticated control, isolation and safe recovery",
+    "Add actual budget enforcement"
   ],
   "estimated_remaining_work": "26 of 30 full acceptance criteria remain unverified; duration unknown.",
   "acceptance_criteria_completion_percentage": 13.3,

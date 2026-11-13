@@ -14,13 +14,13 @@ TaskId = Annotated[int, Path(ge=1, le=2147483647)]
 MAX_EDGES = 10000
 
 
-def lock_project(db: Db, task_id: int) -> Task:
+def lock_project(db: Db, task_id: int, *, sqlite_write_locked: bool = False) -> Task:
     # SQLite has database-level write locking; PostgreSQL serializes graph edits
     # via a row lock. Only these two database engines are supported here.
     dialect = db.get_bind().dialect.name
-    if dialect == 'sqlite':
+    if dialect == 'sqlite' and not sqlite_write_locked:
         db.execute(text('BEGIN IMMEDIATE'))
-    elif dialect != 'postgresql':
+    elif dialect not in ('postgresql', 'sqlite'):
         raise HTTPException(status_code=501, detail='Unsupported database for dependency changes')
     task = db.get(Task, task_id)
     if task is None:

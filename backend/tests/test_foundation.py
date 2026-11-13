@@ -54,6 +54,25 @@ def test_migration_and_readiness(tmp_path, monkeypatch, capsys):
         with engine.begin() as connection:
             row = connection.execute(text('SELECT name, status FROM projects')).one()
             assert row == ('Existing', 'planned')
+        # Upgrade must refuse pre-existing simultaneous runs for one agent without deleting history.
+        command.downgrade(config, '0010')
+        with engine.begin() as connection:
+            p = connection.execute(text("INSERT INTO projects (name) VALUES ('Old runs') RETURNING id")).scalar_one()
+            a = connection.execute(text("INSERT INTO agents (name, role, project_id) VALUES ('Old', 'QA', :p) RETURNING id"), {'p': p}).scalar_one()
+            t1 = connection.execute(text("INSERT INTO tasks (project_id, title) VALUES (:p, 'Old 1') RETURNING id"), {'p': p}).scalar_one()
+            t2 = connection.execute(text("INSERT INTO tasks (project_id, title) VALUES (:p, 'Old 2') RETURNING id"), {'p': p}).scalar_one()
+            connection.execute(text("INSERT INTO task_runs (task_id, agent_id, status, model) VALUES (:t1, :a, 'running', 'mock'), (:t2, :a, 'uncertain', 'mock')"), {'t1': t1, 't2': t2, 'a': a})
+        with pytest.raises(RuntimeError, match='multiple unresolved runs'):
+            command.upgrade(config, 'head')
+        with engine.begin() as connection:
+            assert connection.execute(text('SELECT COUNT(*) FROM task_runs')).scalar_one() == 2
+            connection.execute(text("UPDATE task_runs SET status = 'resolved' WHERE task_id = :t"), {'t': t2})
+        command.upgrade(config, 'head')
+        with engine.begin() as connection:
+            connection.execute(text('DELETE FROM task_runs'))
+            connection.execute(text('DELETE FROM tasks WHERE project_id = :p'), {'p': p})
+            connection.execute(text('DELETE FROM agents WHERE project_id = :p'), {'p': p})
+            connection.execute(text('DELETE FROM projects WHERE id = :p'), {'p': p})
         # Exercise the 0005 -> 0006 upgrade with pre-existing tasks and edges.
         command.downgrade(config, '0005')
         with engine.begin() as connection:
@@ -176,24 +195,28 @@ def test_migration_and_readiness(tmp_path, monkeypatch, capsys):
                 run_id = next(item for item in results if item is not None)
                 running = client.get(f'/api/tasks/{task_id}/runs').json()[0]
                 assert running['status'] == 'running' and running['heartbeat_state'] == 'fresh'
-                with pytest.raises(RuntimeError, match='heartbeat data exists'):
-                    command.downgrade(config, '0009')
+                with pytest.raises(RuntimeError, match='unresolved worker runs'):
+                    command.downgrade(config, '0010')
                 with worker_engine.begin() as connection:
                     connection.execute(text('UPDATE task_runs SET heartbeat_at = :ts WHERE id = :id'), {'id': run_id, 'ts': datetime.now(timezone.utc) - timedelta(minutes=3)})
                 assert client.get(f'/api/tasks/{task_id}/runs').json()[0]['heartbeat_state'] == 'stale'
                 with Session(worker_engine) as session:
                     assert heartbeat_run(session, run_id)
                 assert client.get(f'/api/tasks/{task_id}/runs').json()[0]['heartbeat_state'] == 'fresh'
-                # Disposable test database: clear heartbeats to exercise the older history guard.
-                with worker_engine.begin() as connection:
-                    connection.execute(text('UPDATE task_runs SET heartbeat_at = NULL WHERE id = :id'), {'id': run_id})
-                assert client.get(f'/api/tasks/{task_id}/runs').json()[0]['heartbeat_state'] == 'unknown'
-                with pytest.raises(RuntimeError, match='task run history'):
-                    command.downgrade(config, '0008')
-                command.upgrade(config, 'head')
                 with Session(worker_engine) as session:
                     assert resolve_run(session, run_id)
                     assert not heartbeat_run(session, run_id)
+                with pytest.raises(RuntimeError, match='heartbeat data exists'):
+                    command.downgrade(config, '0009')
+                # SQLite can commit earlier downgrade DDL; restore head before continuing.
+                command.upgrade(config, 'head')
+                # Disposable test database: clear heartbeats to exercise the older history guard.
+                with worker_engine.begin() as connection:
+                    connection.execute(text('UPDATE task_runs SET heartbeat_at = NULL WHERE id = :id'), {'id': run_id})
+                assert client.get(f'/api/tasks/{task_id}/runs').json()[0]['heartbeat_state'] == 'not_running'
+                with pytest.raises(RuntimeError, match='task run history'):
+                    command.downgrade(config, '0008')
+                command.upgrade(config, 'head')
                 monkeypatch.setattr('app.task_worker.HEARTBEAT_INTERVAL_SECONDS', 0.01)
                 heartbeat_writer = Mock(wraps=__import__('app.task_worker', fromlist=['_write_heartbeat'])._write_heartbeat)
                 monkeypatch.setattr('app.task_worker._write_heartbeat', heartbeat_writer)
@@ -386,6 +409,12 @@ def test_migration_and_readiness(tmp_path, monkeypatch, capsys):
                     assert select_candidates(session, batch_project, 20) == [batch_tasks[2]]
                 assert asyncio.run(run_once(batch_engine, batch_tasks[0], 'key', lambda _: provider, first_run_only=True, project_id=batch_project)) == 2
                 assert provider.complete.await_count == 2
+                # The uncertain run holds the agent slot even for a different task.
+                assert asyncio.run(run_batch(batch_engine, batch_project, 20, 'key', lambda _: provider)) == 2
+                assert provider.complete.await_count == 2
+                uncertain_id = client.get(f'/api/tasks/{batch_tasks[1]}/runs').json()[0]['id']
+                with Session(batch_engine) as session:
+                    assert resolve_run(session, uncertain_id)
                 assert asyncio.run(run_batch(batch_engine, batch_project, 20, 'key', lambda _: provider)) == 0
                 assert provider.complete.await_count == 3
                 with batch_engine.begin() as connection:
@@ -397,6 +426,52 @@ def test_migration_and_readiness(tmp_path, monkeypatch, capsys):
                 assert client.delete(f'/api/tasks/{item}').status_code == 204
             assert client.delete(f'/api/agents/{batch_agent}').status_code == 204
             assert client.delete(f'/api/projects/{batch_project}').status_code == 204
+            # Global capacity serializes claims across projects/agents; uncertain runs retain a slot.
+            capacity_project = client.post('/api/projects', json={'name': 'Capacity', 'status': 'active'}).json()['id']
+            capacity_engine = make_engine(url)
+            try:
+                agents, task_ids, run_ids = [], [], []
+                with capacity_engine.begin() as connection:
+                    for index in range(21):
+                        aid = connection.execute(text("INSERT INTO agents (name, role, project_id, provider, model) VALUES (:n, 'worker', :p, 'openai', 'mock') RETURNING id"), {'n': f'Agent {index}', 'p': capacity_project}).scalar_one()
+                        tid = connection.execute(text("INSERT INTO tasks (project_id, title) VALUES (:p, :t) RETURNING id"), {'p': capacity_project, 't': f'Task {index}'}).scalar_one()
+                        connection.execute(text('INSERT INTO task_assignments (task_id, agent_id, project_id) VALUES (:t, :a, :p)'), {'t': tid, 'a': aid, 'p': capacity_project})
+                        agents.append(aid); task_ids.append(tid)
+                        if index < 19:
+                            rid = connection.execute(text("INSERT INTO task_runs (task_id, agent_id, status, model) VALUES (:t, :a, 'uncertain', 'mock') RETURNING id"), {'t': tid, 'a': aid}).scalar_one()
+                            run_ids.append(rid)
+                barrier = Barrier(2)
+                def capacity_claim(tid):
+                    barrier.wait(timeout=5)
+                    with Session(capacity_engine) as session:
+                        try:
+                            return prepare_run(session, tid).run_id
+                        except RunRejected:
+                            return None
+                with ThreadPoolExecutor(max_workers=2) as pool:
+                    one = pool.submit(capacity_claim, task_ids[19]); two = pool.submit(capacity_claim, task_ids[20])
+                    claims = [one.result(timeout=20), two.result(timeout=20)]
+                assert sum(value is not None for value in claims) == 1
+                with capacity_engine.begin() as connection:
+                    assert connection.execute(text("SELECT COUNT(*) FROM task_runs WHERE status IN ('running', 'uncertain')")).scalar_one() == 20
+                    extra = connection.execute(text("INSERT INTO tasks (project_id, title) VALUES (:p, 'Same agent') RETURNING id"), {'p': capacity_project}).scalar_one()
+                    connection.execute(text('INSERT INTO task_assignments (task_id, agent_id, project_id) VALUES (:t, :a, :p)'), {'t': extra, 'a': agents[0], 'p': capacity_project})
+                with Session(capacity_engine) as session:
+                    assert resolve_run(session, run_ids[1])
+                with Session(capacity_engine) as session:
+                    with pytest.raises(RunRejected, match='agent has an unresolved run'):
+                        prepare_run(session, extra)
+                with pytest.raises(IntegrityError):
+                    with capacity_engine.begin() as connection:
+                        connection.execute(text("INSERT INTO task_runs (task_id, agent_id, status, model) VALUES (:t, :a, 'running', 'mock')"), {'t': extra, 'a': agents[0]})
+                with capacity_engine.begin() as connection:
+                    connection.execute(text('DELETE FROM task_runs WHERE task_id IN (SELECT id FROM tasks WHERE project_id = :p)'), {'p': capacity_project})
+                    connection.execute(text('DELETE FROM task_assignments WHERE project_id = :p'), {'p': capacity_project})
+                    connection.execute(text('DELETE FROM tasks WHERE project_id = :p'), {'p': capacity_project})
+                    connection.execute(text('DELETE FROM agents WHERE project_id = :p'), {'p': capacity_project})
+            finally:
+                capacity_engine.dispose()
+            assert client.delete(f'/api/projects/{capacity_project}').status_code == 204
             assert client.delete(f'/api/tasks/{other_task}').status_code == 204
             assert client.delete(f'/api/projects/{other_project}').status_code == 204
             assert client.patch(f'/api/tasks/{task_id}', json={'title': 'Updated'}).json()['title'] == 'Updated'
