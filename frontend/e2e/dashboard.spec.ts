@@ -97,7 +97,7 @@ test('manage task dependencies and inspect readiness', async ({page}) => {
   await page.getByRole('button', {name: 'Save assignment'}).click();
   await expect(page.getByRole('region', {name: 'Recent task activity'}).locator('li').first()).toContainText('Task assigned for planning');
   await page.reload();
-  await expect(page.getByRole('alert')).toContainText('Could not load data');
+  await expect(page.getByRole('alert').filter({hasText: 'Could not load data'})).toBeVisible();
   await authenticate(page);
   await page.getByLabel('Select task').selectOption(consumer!);
   await expect(assignment.locator('option:checked')).toContainText('Planner');

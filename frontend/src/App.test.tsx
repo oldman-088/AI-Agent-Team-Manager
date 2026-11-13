@@ -32,8 +32,8 @@ describe('dashboard language and data', () => {
   it('localizes failure messages when the selected language changes', async () => {
     vi.stubGlobal('fetch', vi.fn().mockImplementation(async (url: string) => ({ok: url === '/health/ready', json: async () => []})));
     render(<App />);
-    await screen.findByRole('alert');
+    await screen.findByText(/Could not load data/);
     fireEvent.change(screen.getByLabelText('Language'), {target: {value: 'ar'}});
-    expect(screen.getByRole('alert').textContent).toContain('تعذّر تحميل البيانات');
+    expect(screen.getByText(/تعذّر تحميل البيانات/)).toBeTruthy();
   });
 });

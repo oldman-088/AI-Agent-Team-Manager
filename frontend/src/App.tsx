@@ -137,6 +137,7 @@ export function App() {
       <label>{t.selectTask}<select value={selectedTask} onChange={e => setSelectedTask(e.target.value)}><option value="">{t.chooseTask}</option>{tasks.map(task => <option key={task.id} value={task.id}>{task.title} (#{task.id})</option>)}</select></label>
       {tasks.find(task => String(task.id) === selectedTask) && <><TaskAssignment key={`assignment-${selectedTask}`} task={tasks.find(task => String(task.id) === selectedTask)!} agents={agents} locale={locale} onChanged={refresh} /><TaskDetails key={selectedTask} task={tasks.find(task => String(task.id) === selectedTask)!} tasks={tasks} locale={locale} onChanged={refresh} /><TaskRuns key={`runs-${selectedTask}`} taskId={Number(selectedTask)} locale={locale} refreshVersion={tasks} /></>}
     </section>
+    <UnresolvedRuns locale={locale} refreshVersion={readyTasks} />
     <section aria-labelledby="ready-tasks-heading"><h2 id="ready-tasks-heading">{t.readyTasks}</h2><p>{t.readyTasksHelp}</p>
       {readyTasks.length ? <ul>{readyTasks.map(task => <li key={task.id}><bdi>{task.title}</bdi> · <bdi>#{task.id}</bdi> · <bdi>{projects.find(project => project.id === task.project_id)?.name ?? `#${task.project_id}`}</bdi></li>)}</ul> : <p>{t.noReadyTasks}</p>}
     </section>
