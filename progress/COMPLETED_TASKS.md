@@ -1,3 +1,3 @@
 # Completed tasks
 
-Repository inspection, preliminary research and architecture, prototype CI, milestones/issues, initial backend health and migration foundation, frontend readiness dashboard, local unit tests and build. See `WORKFLOW_REPORT.md` for verification and remaining gaps.
+Repository research and architecture baseline; prototype CI; FastAPI and React foundations; project CRUD, migration, local host/origin checks and frontend create/list. See `WORKFLOW_REPORT.md` for test evidence and remaining gaps.

@@ -1,6 +1,6 @@
 # Blockers and limitations
 
-- The owner has not selected a project license.
-- PostgreSQL tooling and Docker are unavailable locally; migration/readiness smoke tests passed against PostgreSQL in CI.
-- Python dependency locking, full Windows installation and browser compatibility remain unvalidated.
-- Agent execution and most requested capabilities are not implemented.
+- No project license selected.
+- PostgreSQL and Docker are unavailable locally; new migration and CRUD require CI validation.
+- Authentication, project isolation, browser E2E and agent execution are not implemented.
+- Python dependency locking and full platform validation remain outstanding.

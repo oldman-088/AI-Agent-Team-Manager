@@ -2,7 +2,7 @@
 
 ## Current state
 
-The legacy local prototype uses Python's standard library, a SQLite database, and a static JavaScript UI. It manages agent labels and tasks only. It is unauthenticated, has no actual agents, providers, projects or execution, and is **not production-ready**. A separate early FastAPI/SQLAlchemy backend and React/Vite dashboard now provide health probes and a starter migration; they do not replace the prototype. Existing data is not automatically migrated to any future database.
+The legacy local prototype uses Python's standard library, a SQLite database, and a static JavaScript UI. It manages agent labels and tasks only. It is unauthenticated, has no actual agents, providers, projects or execution, and is **not production-ready**. A separate early FastAPI/SQLAlchemy backend and React/Vite dashboard now provide health probes and a starter migration; they do not replace the prototype. The new backend also supports basic project-record CRUD with a localhost host/origin guard; there is no authentication and it remains local-only. Existing data is not automatically migrated to any future database.
 
 ## Target architecture (proposed, not implemented)
 

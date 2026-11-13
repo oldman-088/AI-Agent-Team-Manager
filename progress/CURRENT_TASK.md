@@ -1,3 +1,3 @@
 # Current task
 
-Continue Phase 0 dependency/license research and Phase 1 project and agent management. PostgreSQL migration smoke tests and CodeQL passed on commit `d606595`.
+Verify project CRUD, migration and local security changes on GitHub Actions; then continue dependency review and agent management.
