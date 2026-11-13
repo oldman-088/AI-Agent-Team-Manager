@@ -1,3 +1,3 @@
 # Current task
 
-Design authenticated audit and safe agent execution; expand accessibility testing. Dependency panel passed Chromium CI at `8829de9`.
+Verify migration 0008, planning assignments and UI in PostgreSQL and Chromium CI, then design authenticated audit and safe execution.

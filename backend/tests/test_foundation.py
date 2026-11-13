@@ -126,6 +126,23 @@ def test_migration_and_readiness(tmp_path, monkeypatch):
             assert client.get(f'/api/tasks?project_id={project_id}').json()[0]['id'] == task_id
             assert client.get('/api/tasks?project_id=2147483647').json() == []
             assert client.get('/api/tasks?limit=101').status_code == 422
+            assignment_url = f'/api/tasks/{task_id}/assignment'
+            assert client.get(assignment_url).json() == {'task_id': task_id, 'agent_id': None}
+            assert client.put(assignment_url, json={}).status_code == 422
+            assert client.put(assignment_url, json={'agent_id': 2147483647}).status_code == 404
+            other_agent = client.post('/api/agents', json={'name': 'Unassigned', 'role': 'QA'}).json()['id']
+            assert client.put(assignment_url, json={'agent_id': other_agent}).status_code == 422
+            assert client.delete(f'/api/agents/{other_agent}').status_code == 204
+            assert client.put(assignment_url, json={'agent_id': agent_id}).json()['agent_id'] == agent_id
+            assert client.put(assignment_url, json={'agent_id': agent_id}).status_code == 200
+            assert client.patch(f'/api/agents/{agent_id}', json={'project_id': None}).status_code == 409
+            assert client.delete(f'/api/agents/{agent_id}').status_code == 409
+            history = client.get(f'/api/events?project_id={project_id}').json()
+            assert sum(e['event_type'] == 'task.assigned' and e['task_id'] == task_id for e in history) == 1
+            with pytest.raises(RuntimeError, match='task assignments exist'):
+                command.downgrade(config, '0007')
+            assert client.put(assignment_url, json={'agent_id': None}).json()['agent_id'] is None
+            assert client.put(assignment_url, json={'agent_id': agent_id}).status_code == 200
             second = client.post('/api/tasks', json={'project_id': project_id, 'title': 'Second'}).json()['id']
             third = client.post('/api/tasks', json={'project_id': project_id, 'title': 'Third'}).json()['id']
             other_project = client.post('/api/projects', json={'name': 'Separate'}).json()['id']
@@ -220,6 +237,7 @@ def test_migration_and_readiness(tmp_path, monkeypatch):
             assert client.patch(f'/api/tasks/{task_id}', json={'title': 'Updated'}).json()['title'] == 'Updated'
             assert client.patch(f'/api/tasks/{task_id}', json={'status': 'running'}).status_code == 422
             assert client.post(f'/api/tasks/{task_id}/cancel', json={}).json()['status'] == 'cancelled'
+            assert client.put(assignment_url, json={'agent_id': None}).status_code == 409
             assert client.post(f'/api/tasks/{task_id}/cancel', json={}).json()['status'] == 'cancelled'
             history = client.get(f'/api/events?project_id={project_id}').json()
             assert sum(e['event_type'] == 'task.cancelled' and e['task_id'] == task_id for e in history) == 1

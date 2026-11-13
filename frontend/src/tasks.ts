@@ -38,3 +38,13 @@ export async function changeDependency(id: number, dependencyId: number, add: bo
   const response = await fetcher(`/api/tasks/${id}/dependencies/${dependencyId}`, {method: add ? 'PUT' : 'DELETE', ...(add ? {headers: {'Content-Type': 'application/json'}, body: '{}'} : {})});
   if (!response.ok) throw new Error('Could not change dependency');
 }
+
+export async function getAssignment(id: number, fetcher: typeof fetch = fetch): Promise<number | null> {
+  const response = await fetcher(`/api/tasks/${id}/assignment`);
+  if (!response.ok) throw new Error('Could not load assignment');
+  return (await response.json()).agent_id;
+}
+export async function setAssignment(id: number, agentId: number | null, fetcher: typeof fetch = fetch): Promise<void> {
+  const response = await fetcher(`/api/tasks/${id}/assignment`, {method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({agent_id: agentId})});
+  if (!response.ok) throw new Error('Could not change assignment');
+}

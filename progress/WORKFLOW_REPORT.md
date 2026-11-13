@@ -1,6 +1,6 @@
 # Workflow report
 
-Last updated: 2026-11-13T18:14:09+00:00
+Last updated: 2026-11-13T18:17:50+00:00
 
 ## Completion indicator
 
@@ -23,3 +23,7 @@ Project license remains unselected. PostgreSQL is unavailable locally; the activ
 ## Dependency UI checkpoint
 
 Added localized task dependency inspection, addition and removal, and readiness snapshot with blocker IDs. Selection is limited to the first 100 loaded tasks; server revalidates changes and completion. Frontend typecheck, 15 tests, build and npm audit passed locally. Browser CI initially failed due to a label selector and a PUT missing the JSON content type required by the server guard; both were corrected and regression-tested. All PR checks passed at `8829de9`: [Chromium](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43480400100), [PostgreSQL](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43480400177), [frontend](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43480400278), [matrix](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43480400193) and [CodeQL](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43480400181). Later commits require their own checks. Acceptance remains 4/30.
+
+## Planning assignment checkpoint
+
+Added one planning assignment per task with project-scoped database foreign keys, a manual API and localized UI. It does not start an agent. Only pending task assignments can be changed; assigned agents cannot move or be deleted. Terminal assignments currently remain until task deletion. Downgrade 0008 refuses to drop assignments. SQLite backend tests passed (11); frontend typecheck, 15 tests and build passed before final copy and E2E changes. PostgreSQL and Chromium CI pending. Acceptance remains 4/30.

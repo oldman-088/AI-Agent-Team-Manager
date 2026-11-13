@@ -19,6 +19,7 @@ class Project(Base):
 
 class Agent(Base):
     __tablename__ = 'agents'
+    __table_args__ = (Index('uq_agents_id_project_id', 'id', 'project_id', unique=True),)
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     role: Mapped[str] = mapped_column(String(200), nullable=False)
@@ -62,3 +63,16 @@ class ActivityEvent(Base):
     related_task_id: Mapped[int | None] = mapped_column(ForeignKey('tasks.id', ondelete='SET NULL'), nullable=True)
     event_type: Mapped[str] = mapped_column(String(40), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
+
+
+class TaskAssignment(Base):
+    """Planning association only, never an execution claim."""
+    __tablename__ = 'task_assignments'
+    __table_args__ = (
+        ForeignKeyConstraint(['task_id', 'project_id'], ['tasks.id', 'tasks.project_id'], ondelete='CASCADE'),
+        ForeignKeyConstraint(['agent_id', 'project_id'], ['agents.id', 'agents.project_id'], ondelete='RESTRICT'),
+        Index('ix_task_assignments_agent_id', 'agent_id'),
+    )
+    task_id: Mapped[int] = mapped_column(primary_key=True)
+    project_id: Mapped[int] = mapped_column(nullable=False)
+    agent_id: Mapped[int] = mapped_column(nullable=False)

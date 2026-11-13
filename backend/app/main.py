@@ -12,6 +12,7 @@ from app.api.agents import router as agents_router
 from app.api.tasks import router as tasks_router
 from app.api.dependencies import router as dependencies_router
 from app.api.events import router as events_router
+from app.api.assignments import router as assignments_router
 from app.security import LocalGuard
 from app.config import Settings
 from app.database import check_database, make_engine
@@ -36,6 +37,7 @@ def create_app(settings: Settings | None = None, engine_factory: Callable[[str],
     application.include_router(tasks_router)
     application.include_router(dependencies_router)
     application.include_router(events_router)
+    application.include_router(assignments_router)
 
     @application.get("/health/live")
     def live() -> dict[str, str]:

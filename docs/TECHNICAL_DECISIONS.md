@@ -28,3 +28,7 @@ A human may explicitly mark a task completed after its direct dependencies are c
 ## 2026-11-13: Minimal operational task history
 
 Record selected task and dependency events transactionally, without copying names, prompts, credentials or other user content. Null references when a task or project is deleted rather than misattribute history if an ID is reused. Event history is not an authenticated, immutable or complete audit log, has no retention policy, and covers only API-mediated changes after migration 0007. The 0007 downgrade rejects nonempty history to prevent silent loss. Production audit, identity, retention and authorization require separate design.
+
+## 2026-11-13: Planning-only task assignments
+
+Use a separate one-per-task assignment table with composite project-scoped foreign keys. Database constraints prevent moving or deleting assigned agents and cross-project associations, including direct SQL; deleting a task cascades its assignment. Changes are permitted for pending tasks under the existing project lock. Terminal assignments are retained and cannot be cleared through the API; deleting the task removes the association, a deliberate current limitation. Idempotent repeats produce no event. This is not a worker lease, scheduling mechanism, runtime status, security audit or proof of execution. Downgrade 0008 refuses to erase active assignments.

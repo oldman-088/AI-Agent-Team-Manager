@@ -3,6 +3,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, HTTPException, Path, Response
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 
 from app.api.projects import Db
 from app.models import Agent, Project
@@ -56,7 +57,11 @@ def update_agent(agent_id: AgentId, data: AgentUpdate, db: Db) -> Agent:
     agent = find_agent(db, agent_id)
     for field, value in changes.items():
         setattr(agent, field, value)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=409, detail='Agent has task assignments; remove them before changing project') from None
     db.refresh(agent)
     return agent
 
@@ -65,5 +70,9 @@ def update_agent(agent_id: AgentId, data: AgentUpdate, db: Db) -> Agent:
 def delete_agent(agent_id: AgentId, db: Db) -> Response:
     agent = find_agent(db, agent_id)
     db.delete(agent)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=409, detail='Agent has task assignments; remove them before deleting') from None
     return Response(status_code=204)

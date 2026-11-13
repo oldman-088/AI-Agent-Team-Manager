@@ -19,3 +19,5 @@ A pending planning task may be marked completed manually from the dashboard if i
 Recent task activity is shown as metadata with database-provided timestamps. It is not a tamper-proof or authenticated security audit, and the UI currently loads only the first 100 events.
 
 Select a loaded task to inspect its dependency IDs and readiness snapshot, and add or remove prerequisites from the same project's loaded tasks. Choices are limited to the first 100 tasks loaded in the dashboard; dependencies outside that page are shown by ID. Readiness can become stale, and the server rechecks it on manual completion. The API remains authoritative for cycles, status and concurrent edits.
+
+A selected pending task can be manually assigned to an agent configuration from the same project. The first 100 loaded agents are available; an existing assignment outside that page is identified by ID. Assignment is planning only and starts nothing. Terminal task assignments cannot currently be changed. Refresh and reselect the task to observe changes made elsewhere.

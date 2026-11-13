@@ -60,6 +60,11 @@ test('manage task dependencies and inspect readiness', async ({page}) => {
   await expect(page.getByRole('status')).toContainText('Ready');
   await page.getByLabel('Project name').fill('Dependencies project');
   await page.getByRole('button', {name: 'Create project'}).click();
+  await page.getByLabel('Agent name').fill('Planner');
+  await page.getByLabel('Role', {exact: true}).fill('Planner');
+  await page.getByRole('region', {name: 'Agent configurations'}).getByLabel('Project').selectOption({label: 'Dependencies project'});
+  await page.getByRole('button', {name: 'Create configuration'}).click();
+  await expect(page.getByRole('region', {name: 'Agent configurations'}).locator('li').filter({hasText: 'Planner'})).toBeVisible();
   const section = page.getByRole('region', {name: 'Planning tasks'});
   for (const title of ['Consumer', 'Prerequisite']) {
     await section.getByLabel('Project').selectOption({label: 'Dependencies project'});
@@ -70,6 +75,13 @@ test('manage task dependencies and inspect readiness', async ({page}) => {
   const consumer = await page.getByLabel('Select task').locator('option').filter({hasText: 'Consumer'}).getAttribute('value');
   await page.getByLabel('Select task').selectOption(consumer!);
   await expect(page.getByText('Ready for manual completion', {exact: true})).toBeVisible();
+  const assignment = page.getByRole('combobox', {name: 'Assigned agent configuration'});
+  await assignment.selectOption({index: 1});
+  await page.getByRole('button', {name: 'Save assignment'}).click();
+  await expect(page.getByRole('region', {name: 'Recent task activity'}).locator('li').first()).toContainText('Task assigned for planning');
+  await page.reload();
+  await page.getByLabel('Select task').selectOption(consumer!);
+  await expect(assignment.locator('option:checked')).toContainText('Planner');
   await page.getByRole('combobox', {name: 'Prerequisite', exact: true}).selectOption({index: 1});
   await page.getByRole('button', {name: 'Add dependency'}).click();
   await expect(page.getByText('Not ready for manual completion', {exact: true})).toBeVisible();

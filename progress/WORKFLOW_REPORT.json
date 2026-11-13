@@ -1,9 +1,9 @@
 {
-  "last_updated_utc": "2026-11-13T18:14:09+00:00",
+  "last_updated_utc": "2026-11-13T18:17:50+00:00",
   "overall_completion_percentage": null,
   "completion_note": "Total project effort completion unknown. The acceptance-criteria indicator is conservative and equally weighted; it is not an estimate of effort or delivery date.",
   "current_phase": "Phases 0–4 and partial Phase 10 in progress",
-  "current_task": "Design authenticated auditing and safe agent execution",
+  "current_task": "Verify planning assignments in PostgreSQL and browser CI",
   "completed_tasks": [
     "Inspected repository, branches, permissions and local tools",
     "Researched candidate repositories and documented preliminary findings",
@@ -40,11 +40,12 @@
     "Added transactional metadata-only task activity events and read API",
     "Added localized recent activity to dashboard",
     "Protected event history from accidental downgrade deletion",
-    "Added localized task dependency and readiness panel"
+    "Added localized task dependency and readiness panel",
+    "Implemented planning-only manual task assignment and localized UI"
   ],
   "in_progress_tasks": [
-    "Design authenticated and tamper-resistant audit controls and safe execution",
-    "Expand browser and accessibility testing"
+    "Verify migration 0008 and assignment UI in GitHub Actions",
+    "Design authenticated audit and safe agent execution"
   ],
   "pending_tasks": [
     "Full project and agent management",
@@ -54,43 +55,46 @@
     "Browser end-to-end testing"
   ],
   "files_created": [
-    "frontend/src/TaskDetails.tsx",
-    "frontend/src/TaskDetails.test.tsx"
+    "backend/alembic/versions/0008_task_assignments.py",
+    "backend/app/api/assignments.py",
+    "frontend/src/TaskAssignment.tsx"
   ],
   "files_modified": [
-    "frontend/src/App.tsx",
+    "backend/app/models.py",
+    "backend/app/main.py",
+    "backend/app/api/agents.py",
+    "backend/app/services/activity.py",
+    "backend/tests/test_foundation.py",
+    "backend/README.md",
     "frontend/src/tasks.ts",
+    "frontend/src/App.tsx",
     "frontend/src/i18n/messages.ts",
     "frontend/e2e/dashboard.spec.ts",
     "frontend/README.md",
+    "docs/TECHNICAL_DECISIONS.md",
     "progress/تقرير_التقدم.md",
     "progress/WORKFLOW_REPORT.md",
     "progress/WORKFLOW_REPORT.json",
     "progress/PROJECT_STATUS.md",
     "progress/CURRENT_TASK.md",
-    "frontend/src/tasks.test.ts"
+    "progress/BLOCKERS.md"
   ],
   "tests_executed": [
     {
+      "command": "cd backend && pytest -q",
+      "result": "11 passed on SQLite including project validation, event idempotence, agent deletion/move restrictions and migration guard; Starlette deprecation warning"
+    },
+    {
       "command": "cd frontend && npm run typecheck && npm test && npm run build",
-      "result": "Passed locally: 15 tests and build"
-    },
-    {
-      "command": "cd frontend && npm audit --audit-level=high",
-      "result": "0 vulnerabilities"
-    },
-    {
-      "command": "gh pr checks 4 --watch at 8829de9",
-      "result": "All passed including Chromium dependency UI, frontend, PostgreSQL, prototype matrix and CodeQL"
+      "result": "15 tests passed and build passed locally before final copy and E2E changes"
     }
   ],
-  "build_status": "All PR checks passed at 8829de9; subsequent commits need their own checks.",
+  "build_status": "PostgreSQL, Chromium and full PR checks pending for assignment changes",
   "errors_encountered": [
-    "Browser CI initially exposed an ambiguous label selector and dependency PUT rejected by JSON content-type guard.",
-    "Starlette httpx deprecation and GitHub Actions Node 20 warnings persist."
+    "Starlette httpx deprecation warning persists"
   ],
   "fixes_implemented": [
-    "Used accessible combobox selector and sent JSON content type on dependency PUT; added regression test and verified Chromium CI."
+    "Added database-enforced project scoped assignment consistency and downgrade guard"
   ],
   "blockers": [
     "No project license selected",
@@ -98,9 +102,8 @@
     "No authenticated, immutable or complete security audit; no agent execution or production security"
   ],
   "next_actions": [
-    "Verify browser CI for dependency panel",
-    "Design secure identity and durable audit",
-    "Implement safe agent execution"
+    "Verify PostgreSQL and Chromium CI",
+    "Design authenticated audit and safe agent execution"
   ],
   "estimated_remaining_work": "26 of 30 full acceptance criteria remain unverified; duration unknown.",
   "acceptance_criteria_completion_percentage": 13.3,
