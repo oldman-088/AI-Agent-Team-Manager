@@ -53,3 +53,13 @@ python -m app.provider_probe --model YOUR_MODEL_ID --confirm-billable
 ```
 
 The model ID must be available to your account. This sends the fixed prompt “Reply with the single word OK.” to OpenAI and may incur charges; the explicit flag is required. The request is limited to 32 output tokens, has a 30-second SDK timeout, no automatic retries, no tools and `store=false`. `store=false` does not guarantee zero provider retention. The SDK is configured with the official OpenAI API base URL rather than accepting `OPENAI_BASE_URL`; trusted proxy, certificate and SDK logging environment configuration still matters. Do not enable verbose HTTP/SDK logs with production credentials. No result text or credential is deliberately printed or persisted by this command; token counts may be printed if provided. Errors are sanitized. This is not a task execution or provider integration with the dashboard. It has only been tested with mocks; no live request was made, so real network connectivity, account permissions, model availability, billing and actual provider behavior are unverified.
+
+## Optional one-shot text completion (local CLI)
+
+This is separate from tasks and agents, and is not exposed through HTTP. Set `OPENAI_API_KEY` in your process environment and pass a user-provided model ID; input is read from standard input until EOF, not from command-line arguments. Example using a **non-sensitive** local file:
+
+```sh
+python -m app.provider_text --model YOUR_MODEL_ID --confirm-billable --confirm-data-transfer < prompt.txt
+```
+
+Both flags are required before input is read or the client is created. The full input (maximum 20,000 characters) is sent to OpenAI, potentially incurs charges, and must not contain credentials or private material you are not authorized to share. Upstream retention policies still apply even with `store=false`; read the provider's current terms. The response is intentionally printed to stdout, so terminal scrollback, shell redirection and downstream programs may retain it; token usage is printed to stderr when provided. Do not treat output as trusted instructions or execute it automatically. Unicode control and format characters are stripped before display (which can alter text, including some emoji and bidirectional formatting); output is truncated at 100,000 characters. Errors are sanitized, retries disabled, and output tokens capped at 512. The command does not persist content itself, but local environment, proxies, SDK logs, shell history, and the remote provider are separate trust boundaries. Never pass secrets in flags or enable verbose transport logging. Tests use mocked clients; no real account, request, billing, or platform compatibility has been verified.

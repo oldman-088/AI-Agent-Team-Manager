@@ -1,3 +1,3 @@
 # Current task
 
-Monitor remaining CodeQL check at `6556c56`; continue safe provider and execution design. Return to planning improvements later.
+Verify mocked local provider text CLI and security checks in GitHub CI; continue safe provider and execution design. Return to planning improvements later.

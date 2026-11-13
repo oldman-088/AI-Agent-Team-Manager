@@ -1,9 +1,9 @@
 {
-  "last_updated_utc": "2026-11-13T18:35:54+00:00",
+  "last_updated_utc": "2026-11-13T18:37:54+00:00",
   "overall_completion_percentage": null,
   "completion_note": "Total project effort completion unknown. The acceptance-criteria indicator is conservative and equally weighted; it is not an estimate of effort or delivery date.",
   "current_phase": "Phases 0–4 and partial Phase 10 in progress",
-  "current_task": "Continue safe provider and execution design; investigate remaining CodeQL status",
+  "current_task": "Verify one-shot local provider CLI in CI",
   "completed_tasks": [
     "Inspected repository, branches, permissions and local tools",
     "Researched candidate repositories and documented preliminary findings",
@@ -44,10 +44,11 @@
     "Implemented planning-only manual task assignment and localized UI",
     "Enabled unassignment of terminal tasks without deleting records",
     "Added read-only ready-task snapshot and localized dashboard panel",
-    "Added opt-in local provider connectivity probe using mocked tests only"
+    "Added opt-in local provider connectivity probe using mocked tests only",
+    "Added explicit opt-in local one-shot provider text CLI with mocked tests"
   ],
   "in_progress_tasks": [
-    "Monitor remaining GitHub CodeQL status at 6556c56",
+    "Verify mocked text CLI tests and CodeQL on GitHub",
     "Design authenticated audit and safe agent execution"
   ],
   "pending_tasks": [
@@ -58,12 +59,10 @@
     "Browser end-to-end testing"
   ],
   "files_created": [
-    "backend/app/provider_probe.py",
-    "backend/tests/test_provider_probe.py"
+    "backend/app/provider_text.py",
+    "backend/tests/test_provider_text.py"
   ],
   "files_modified": [
-    "backend/app/providers/openai_adapter.py",
-    "backend/tests/test_providers.py",
     "backend/README.md",
     "docs/TECHNICAL_DECISIONS.md",
     "progress/تقرير_التقدم.md",
@@ -76,28 +75,27 @@
   "tests_executed": [
     {
       "command": "cd backend && pytest -q",
-      "result": "15 passed on SQLite with mocked provider and probe tests; Starlette deprecation warning; no live API call"
+      "result": "20 passed locally on SQLite including mock provider CLI tests; Starlette deprecation warning; no live API call"
     },
     {
-      "command": "gh pr checks 4 at 6556c56",
-      "result": "PostgreSQL backend/mock probe, Chromium, frontend, prototype matrix and codeql workflow passed; separate CodeQL check still pending when watch timed out"
+      "command": "gh pr checks 4 at 55c0760",
+      "result": "All checks passed, including previously pending separate CodeQL check"
     }
   ],
-  "build_status": "Most PR checks passed at 6556c56; separate CodeQL check pending at last observation.",
+  "build_status": "New text CLI tests and security checks pending GitHub CI",
   "errors_encountered": [
     "Starlette httpx deprecation warning persists"
   ],
   "fixes_implemented": [
-    "Added explicit billable-operation confirmation, fixed prompt, output cap, sanitized errors, no retries and official provider URL"
+    "Added independent transfer and billing acknowledgements, bounded stdin and output, terminal control filtering and sanitized provider failures"
   ],
   "blockers": [
     "No project license selected",
-    "No live provider credentials or real network call verified",
-    "Separate GitHub CodeQL status pending at last observation",
+    "Provider access remains mocked; real network, billing and retention unverified",
     "No authenticated, immutable or complete security audit; no agent execution or production security"
   ],
   "next_actions": [
-    "Verify probe CI without real credentials",
+    "Verify text CLI CI without real credentials",
     "Design authentication and safe worker execution",
     "Return later to planning improvements"
   ],

@@ -1,6 +1,6 @@
 # Workflow report
 
-Last updated: 2026-11-13T18:35:54+00:00
+Last updated: 2026-11-13T18:37:54+00:00
 
 ## Completion indicator
 
@@ -39,3 +39,7 @@ Added a read-only ready task query with project and assignment filters and bound
 ## Provider connectivity probe checkpoint
 
 Moved from planning to a local, explicitly confirmed, potentially billable OpenAI probe. The CLI uses a fixed prompt, output limit, no retries, official API base URL and sanitized output; no HTTP paid endpoint is exposed. Backend tests: 15 passed on SQLite with mocks; no real credentials or live call. At `6556c56`, PostgreSQL backend/mock probe, browser, frontend, prototype matrix and codeql workflow passed; a separate CodeQL check remained pending after the watch timed out. This is not task execution or provider validation; return to planning improvements later. Acceptance remains 4/30.
+
+## Local provider text CLI checkpoint
+
+Added a separate opt-in local single-shot text completion using stdin, with independent confirmations for data transfer and possible billing, bounded input/output, sanitized failures and terminal control filtering. Response is deliberately printed and may be retained by shell or caller; no task execution, HTTP endpoint, tool calls or autonomous agents. Backend 20 tests passed locally, using mocks, no live call. GitHub checks pending for this change. All checks, including the previously pending separate CodeQL status, passed at `55c0760`. Acceptance remains 4/30.
