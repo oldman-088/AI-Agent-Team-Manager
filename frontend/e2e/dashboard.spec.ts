@@ -22,7 +22,7 @@ test('create records and switch language with RTL and keyboard access', async ({
   await expect(agentSection.locator('li')).toContainText('QA Agent');
   await expect(agentSection.locator('li')).toContainText('Execution not implemented');
 
-  const taskSection = page.getByRole('region', { name: 'Planning tasks' });
+  const taskSection = page.getByRole('region', { name: 'Planning tasks', exact: true });
   await taskSection.getByLabel('Project').selectOption({label: 'مشروع AATM'});
   await page.getByLabel('Task title').fill('Check UI');
   await page.getByRole('button', { name: 'Create task' }).click();
@@ -67,7 +67,7 @@ test('manage task dependencies and inspect readiness', async ({page}) => {
   await page.getByRole('region', {name: 'Agent configurations'}).getByLabel('Project').selectOption({label: 'Dependencies project'});
   await page.getByRole('button', {name: 'Create configuration'}).click();
   await expect(page.getByRole('region', {name: 'Agent configurations'}).locator('li').filter({hasText: 'Planner'})).toBeVisible();
-  const section = page.getByRole('region', {name: 'Planning tasks'});
+  const section = page.getByRole('region', {name: 'Planning tasks', exact: true});
   for (const title of ['Consumer', 'Prerequisite']) {
     await section.getByLabel('Project').selectOption({label: 'Dependencies project'});
     await page.getByLabel('Task title').fill(title);
