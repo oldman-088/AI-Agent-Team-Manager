@@ -70,8 +70,7 @@ test('manage task dependencies and inspect readiness', async ({page}) => {
   const consumer = await page.getByLabel('Select task').locator('option').filter({hasText: 'Consumer'}).getAttribute('value');
   await page.getByLabel('Select task').selectOption(consumer!);
   await expect(page.getByText('Ready for manual completion', {exact: true})).toBeVisible();
-  const prerequisite = await page.getByLabel('Prerequisite', {exact: true}).locator('option').filter({hasText: 'Prerequisite'}).getAttribute('value');
-  await page.getByLabel('Prerequisite', {exact: true}).selectOption(prerequisite!);
+  await page.getByLabel('Prerequisite', {exact: true}).selectOption({index: 1});
   await page.getByRole('button', {name: 'Add dependency'}).click();
   await expect(page.getByText('Not ready for manual completion', {exact: true})).toBeVisible();
   await expect(page.getByText(/Incomplete prerequisites:/)).toContainText('Prerequisite');

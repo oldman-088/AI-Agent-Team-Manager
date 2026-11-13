@@ -7,7 +7,7 @@ const en = {
   agents: 'Agent configurations', agentsHelp: 'These are configuration records only. No agent process or lifecycle is implemented.',
   agentName: 'Agent name', role: 'Role', project: 'Project', unassigned: 'Unassigned', createAgent: 'Create configuration',
   noAgents: 'No agent configurations loaded.', noExecution: 'Execution not implemented',
-  tasks: 'Planning tasks', tasksHelp: 'Tasks are planning records only; dependencies are editable via API, but assignment and execution are not implemented.',
+  tasks: 'Planning tasks', tasksHelp: 'Tasks are planning records only; assignment and execution are not implemented.',
   manualComplete: 'Mark complete manually', completeHelp: 'Manual completion is your assertion; it does not mean an agent ran.', completeError: 'Could not complete task. Check that its dependencies are completed.',
   selectProject: 'Select a project', taskTitle: 'Task title', createTask: 'Create task', noTasks: 'No tasks loaded.',
   details: 'Dependencies and readiness', selectTask: 'Select task', chooseTask: 'Choose a task', prerequisite: 'Prerequisite', choosePrerequisite: 'Choose a prerequisite', addDependency: 'Add dependency', removeDependency: 'Remove dependency', dependencies: 'Dependencies', noDependencies: 'No dependencies.', readyTask: 'Ready for manual completion', blockedTask: 'Not ready for manual completion', blockers: 'Incomplete prerequisites', snapshotHelp: 'Readiness is a snapshot; the server rechecks before completion. Choices include only the first 100 loaded tasks.', dependencyError: 'Could not load or change dependencies. Refresh and check for cycles, task status or concurrent changes.', loadingDetails: 'Loading task details…', taskId: 'Task ID',
