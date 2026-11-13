@@ -1,6 +1,6 @@
 # Workflow report
 
-Last updated: 2026-11-13T18:37:54+00:00
+Last updated: 2026-11-13T18:39:18+00:00
 
 ## Completion indicator
 
@@ -42,4 +42,4 @@ Moved from planning to a local, explicitly confirmed, potentially billable OpenA
 
 ## Local provider text CLI checkpoint
 
-Added a separate opt-in local single-shot text completion using stdin, with independent confirmations for data transfer and possible billing, bounded input/output, sanitized failures and terminal control filtering. Response is deliberately printed and may be retained by shell or caller; no task execution, HTTP endpoint, tool calls or autonomous agents. Backend 20 tests passed locally, using mocks, no live call. GitHub checks pending for this change. All checks, including the previously pending separate CodeQL status, passed at `55c0760`. Acceptance remains 4/30.
+Added a separate opt-in local single-shot text completion using stdin, with independent confirmations for data transfer and possible billing, bounded input/output, sanitized failures and terminal control filtering. Response is deliberately printed and may be retained by shell or caller; no task execution, HTTP endpoint, tool calls or autonomous agents. Backend 20 tests passed locally, using mocks, no live call. All PR checks passed at `cbd674e`: [PostgreSQL backend/mock provider tests](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43484523294), [Chromium](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43484523329), [frontend](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43484523463), [prototype matrix](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43484523300), and [CodeQL](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43484523528). Subsequent commits require separate verification. All checks, including the previously pending separate CodeQL status, also passed at `55c0760`. Acceptance remains 4/30.

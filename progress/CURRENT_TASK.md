@@ -1,3 +1,3 @@
 # Current task
 
-Verify mocked local provider text CLI and security checks in GitHub CI; continue safe provider and execution design. Return to planning improvements later.
+Design authenticated audit and safe agent execution; expand provider validation without live credentials. Return to planning improvements later. All PR checks passed at `cbd674e`.
