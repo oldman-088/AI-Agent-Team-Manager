@@ -1,6 +1,6 @@
 # Workflow report
 
-Last updated: 2026-11-13T17:51:44+00:00
+Last updated: 2026-11-13T18:14:09+00:00
 
 ## Completion indicator
 
@@ -22,4 +22,4 @@ Project license remains unselected. PostgreSQL is unavailable locally; the activ
 
 ## Dependency UI checkpoint
 
-Added localized task dependency inspection, addition and removal, and readiness snapshot with blocker IDs. Selection is limited to the first 100 loaded tasks; server revalidates changes and completion. Frontend typecheck, 14 tests, build and npm audit passed locally before the final small error-state adjustment. New Chromium E2E pending CI. Acceptance remains 4/30.
+Added localized task dependency inspection, addition and removal, and readiness snapshot with blocker IDs. Selection is limited to the first 100 loaded tasks; server revalidates changes and completion. Frontend typecheck, 15 tests, build and npm audit passed locally. Browser CI initially failed due to a label selector and a PUT missing the JSON content type required by the server guard; both were corrected and regression-tested. All PR checks passed at `8829de9`: [Chromium](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43480400100), [PostgreSQL](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43480400177), [frontend](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43480400278), [matrix](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43480400193) and [CodeQL](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43480400181). Later commits require their own checks. Acceptance remains 4/30.

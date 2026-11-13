@@ -1,3 +1,3 @@
 # Current task
 
-Verify dependency editing and readiness UI in Chromium CI, then design authenticated audit and safe execution.
+Design authenticated audit and safe agent execution; expand accessibility testing. Dependency panel passed Chromium CI at `8829de9`.
