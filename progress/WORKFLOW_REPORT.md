@@ -1,6 +1,6 @@
 # Workflow report
 
-Last updated: 2026-11-13T18:55:44+00:00
+Last updated: 2026-11-13T18:58:38+00:00
 
 ## Completion indicator
 
@@ -50,4 +50,8 @@ A manual local worker now claims one ready assigned task, snapshots its agent/ta
 
 ## Bounded first-run scheduler checkpoint
 
-Added an explicitly confirmed one-shot sequential batch for up to 20 previously unattempted, ready, assigned tasks in one active project. The worker rechecks the project and absence of run history while holding the project lock; any failure stops the batch. It is not a daemon, budget cap, global agent concurrency limit or autonomous task completion. 22 backend tests passed locally on SQLite with mock provider; no live calls. PostgreSQL and full CI pending. Acceptance remains 4/30.
+Added an explicitly confirmed one-shot sequential batch for up to 20 previously unattempted, ready, assigned tasks in one active project. The worker rechecks the project and absence of run history while holding the project lock; any failure stops the batch. It is not a daemon, budget cap, global agent concurrency limit or autonomous task completion. 22 backend tests passed locally on SQLite with mock provider; no live calls. All PR checks passed at `7af079b`, including [PostgreSQL scheduler tests](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43487339585) and [CodeQL](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43487339532). Acceptance remains 4/30.
+
+## Advisory worker heartbeat checkpoint
+
+Added nullable heartbeat timestamps, periodic best-effort updates during the local text worker call and read-only freshness indicators. Heartbeats do not prove liveness; no automatic retry or claim release on stale or missing data. Downgrade 0010 guards recorded heartbeat data. Local backend 22 tests and frontend 17 tests, typecheck and build passed; npm audit found zero vulnerabilities. PostgreSQL migration, Chromium and CodeQL pending CI. No live provider call, authenticated lifecycle or automatic safe recovery. Acceptance remains 4/30.

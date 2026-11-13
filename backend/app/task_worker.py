@@ -12,7 +12,29 @@ from app.database import make_engine
 from app.provider_text import MAX_RESPONSE_CHARS, safe_terminal_text
 from app.providers.base import Provider
 from app.providers.openai_adapter import OpenAIProvider
-from app.services.task_runs import RunRejected, finish_run, prepare_run, resolve_run
+from app.services.task_runs import RunRejected, finish_run, heartbeat_run, prepare_run, resolve_run
+
+
+HEARTBEAT_INTERVAL_SECONDS = 5.0
+
+
+def _write_heartbeat(engine: Engine, run_id: int) -> bool:
+    with Session(engine) as db:
+        return heartbeat_run(db, run_id)
+
+
+async def _heartbeat_loop(engine: Engine, run_id: int, stop: asyncio.Event) -> None:
+    while True:
+        try:
+            await asyncio.wait_for(stop.wait(), timeout=HEARTBEAT_INTERVAL_SECONDS)
+            return
+        except TimeoutError:
+            try:
+                if not await asyncio.to_thread(_write_heartbeat, engine, run_id):
+                    return
+            except Exception:
+                print('Heartbeat update failed; run liveness may be unknown.', file=sys.stderr)
+                return
 
 
 async def run_once(engine: Engine, task_id: int, key: str, factory: Callable[[str], Provider], *, first_run_only: bool = False, project_id: int | None = None) -> int:
@@ -28,6 +50,8 @@ async def run_once(engine: Engine, task_id: int, key: str, factory: Callable[[st
     print(f'Run #{prepared.run_id} claimed. Task data will be sent to OpenAI.', file=sys.stderr)
     provider = None
     result = None
+    stop = asyncio.Event()
+    heartbeat = asyncio.create_task(_heartbeat_loop(engine, prepared.run_id, stop))
     try:
         provider = factory(key)
         result = await provider.complete(prepared.request)
@@ -35,6 +59,8 @@ async def run_once(engine: Engine, task_id: int, key: str, factory: Callable[[st
         # A timeout or connection failure does not prove the remote call did not occur.
         print('Provider outcome uncertain; no automatic retry.', file=sys.stderr)
     finally:
+        stop.set()
+        await heartbeat
         if provider is not None:
             try:
                 await provider.close()

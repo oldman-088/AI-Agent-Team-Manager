@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 
 from fastapi import HTTPException
-from sqlalchemy import select, update
+from sqlalchemy import func, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -51,7 +51,7 @@ def prepare_run(db: Session, task_id: int, *, first_run_only: bool = False, proj
         request = CompletionRequest(model=agent.model, prompt=prompt, max_output_tokens=512)
     except ValueError as exc:
         raise RunRejected('Assigned agent model or task input is invalid') from exc
-    run = TaskRun(task_id=task.id, agent_id=agent.id, status='running', model=agent.model)
+    run = TaskRun(task_id=task.id, agent_id=agent.id, status='running', model=agent.model, heartbeat_at=func.now())
     db.add(run)
     try:
         db.flush()
@@ -77,5 +77,13 @@ def resolve_run(db: Session, run_id: int) -> bool:
     # Explicit human action only; never assert success or automatically retry.
     changed = db.execute(update(TaskRun).where(TaskRun.id == run_id, TaskRun.status.in_(['running', 'uncertain']))
                          .values(status='resolved', finished_at=datetime.now(timezone.utc))).rowcount
+    db.commit()
+    return bool(changed)
+
+
+def heartbeat_run(db: Session, run_id: int) -> bool:
+    """Record a best-effort worker heartbeat only while the claim is running."""
+    changed = db.execute(update(TaskRun).where(TaskRun.id == run_id, TaskRun.status == 'running')
+                         .values(heartbeat_at=func.now())).rowcount
     db.commit()
     return bool(changed)

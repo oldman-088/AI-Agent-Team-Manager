@@ -5,7 +5,7 @@ import { TaskRuns } from './TaskRuns';
 
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 it('shows run outcome without treating it as task completion', async () => {
-  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ok: true, json: async () => [{id: 4, agent_id: 2, status: 'succeeded', model: 'model', started_at: '2026-11-13', input_tokens: 3, output_tokens: 2}]}));
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ok: true, json: async () => [{id: 4, agent_id: 2, status: 'succeeded', model: 'model', started_at: '2026-11-13', heartbeat_at: null, heartbeat_state: 'not_running', input_tokens: 3, output_tokens: 2}]}));
   render(<TaskRuns taskId={1} locale="en" refreshVersion={0} />);
   expect(await screen.findByText(/Response received/)).toBeTruthy();
   expect(screen.getByText(/not that the task is completed/)).toBeTruthy();

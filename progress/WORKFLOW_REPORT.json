@@ -1,9 +1,9 @@
 {
-  "last_updated_utc": "2026-11-13T18:55:44+00:00",
+  "last_updated_utc": "2026-11-13T18:58:38+00:00",
   "overall_completion_percentage": null,
   "completion_note": "Total project effort completion unknown. The acceptance-criteria indicator is conservative and equally weighted; it is not an estimate of effort or delivery date.",
   "current_phase": "Phases 0–4 and partial Phase 10 in progress",
-  "current_task": "Verify bounded first-run scheduler against PostgreSQL CI",
+  "current_task": "Verify worker heartbeats and migration in CI",
   "completed_tasks": [
     "Inspected repository, branches, permissions and local tools",
     "Researched candidate repositories and documented preliminary findings",
@@ -47,11 +47,12 @@
     "Added opt-in local provider connectivity probe using mocked tests only",
     "Added explicit opt-in local one-shot provider text CLI with mocked tests",
     "Added manual assigned-task text execution with durable run metadata, mocked tests and run history UI",
-    "Added opt-in bounded sequential scheduling for unattempted ready assigned tasks"
+    "Added opt-in bounded sequential scheduling for unattempted ready assigned tasks",
+    "Added advisory local worker heartbeat and visibility without automatic retry"
   ],
   "in_progress_tasks": [
-    "Verify scheduler selection, claims and failures on PostgreSQL CI",
-    "Build real worker lifecycle and safe recovery"
+    "Verify heartbeat migration and worker observation on PostgreSQL and browser CI",
+    "Implement authenticated lifecycle and safe recovery"
   ],
   "pending_tasks": [
     "Full project and agent management",
@@ -61,14 +62,19 @@
     "Browser end-to-end testing"
   ],
   "files_created": [
-    "backend/app/task_scheduler.py",
-    "backend/tests/test_task_scheduler_cli.py"
+    "backend/alembic/versions/0010_run_heartbeats.py"
   ],
   "files_modified": [
+    "backend/app/models.py",
+    "backend/app/api/task_runs.py",
     "backend/app/services/task_runs.py",
     "backend/app/task_worker.py",
     "backend/tests/test_foundation.py",
     "backend/README.md",
+    "frontend/src/TaskRuns.tsx",
+    "frontend/src/TaskRuns.test.tsx",
+    "frontend/src/i18n/messages.ts",
+    "frontend/README.md",
     "docs/TECHNICAL_DECISIONS.md",
     "progress/تقرير_التقدم.md",
     "progress/WORKFLOW_REPORT.md",
@@ -79,27 +85,40 @@
   ],
   "tests_executed": [
     {
+      "command": "gh pr checks 4 --watch at 7af079b",
+      "result": "All passed, including PostgreSQL scheduler tests and CodeQL; mocked provider only"
+    },
+    {
       "command": "cd backend && pytest -q",
-      "result": "22 passed on SQLite including mocked batch selection, stop-on-error and first-run claim; no live provider call; Starlette deprecation warning"
+      "result": "22 passed on SQLite including heartbeat updates, stale/unknown states, lifecycle and migration guards; mocked provider only"
+    },
+    {
+      "command": "cd frontend && npm run typecheck && npm test && npm run build",
+      "result": "17 frontend tests passed and build succeeded"
+    },
+    {
+      "command": "cd frontend && npm audit --audit-level=high",
+      "result": "0 vulnerabilities"
     }
   ],
-  "build_status": "PostgreSQL scheduler and full GitHub CI pending",
+  "build_status": "Heartbeat PostgreSQL migration and Chromium/CodeQL CI pending",
   "errors_encountered": [
+    "Initial test expected old downgrade guard; new heartbeat guard correctly triggers first. Test now checks both safely in disposable DB.",
     "Starlette httpx deprecation warning persists."
   ],
   "fixes_implemented": [
-    "Added locked first-run-only recheck to prevent a selection/claim retry race."
+    "Added nullable heartbeat, guarded downgrade, best-effort update loop, advisory freshness and stale-run protections."
   ],
   "blockers": [
     "No project license selected",
     "No live provider credentials or real network call verified",
     "No authenticated API, global concurrency limits, process isolation, persistent scheduling or budget controls",
-    "Run history retention management not implemented"
+    "Heartbeat is advisory; no automatic safe recovery or run retention management"
   ],
   "next_actions": [
-    "Verify PostgreSQL and GitHub checks",
-    "Build worker lifecycle, safe recovery and execution isolation",
-    "Add actual budget enforcement and authenticated control"
+    "Verify PostgreSQL and browser CI",
+    "Implement authenticated lifecycle, isolation and safe recovery",
+    "Add budget enforcement and global concurrency controls"
   ],
   "estimated_remaining_work": "26 of 30 full acceptance criteria remain unverified; duration unknown.",
   "acceptance_criteria_completion_percentage": 13.3,

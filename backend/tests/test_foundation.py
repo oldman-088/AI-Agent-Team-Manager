@@ -3,6 +3,7 @@ import asyncio
 from unittest.mock import AsyncMock, Mock
 from concurrent.futures import ThreadPoolExecutor
 from threading import Barrier
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
@@ -16,7 +17,7 @@ from sqlalchemy.orm import Session
 from app.config import Settings
 from app.database import make_engine
 from app.main import create_app
-from app.services.task_runs import prepare_run, resolve_run, RunRejected
+from app.services.task_runs import prepare_run, resolve_run, heartbeat_run, RunRejected
 from app.task_worker import run_once
 from app.task_scheduler import select_candidates, run_batch
 from app.providers.base import CompletionResult, TokenUsage
@@ -173,17 +174,40 @@ def test_migration_and_readiness(tmp_path, monkeypatch, capsys):
                     results = [a.result(timeout=20), b.result(timeout=20)]
                 assert sum(item is not None for item in results) == 1
                 run_id = next(item for item in results if item is not None)
-                assert client.get(f'/api/tasks/{task_id}/runs').json()[0]['status'] == 'running'
+                running = client.get(f'/api/tasks/{task_id}/runs').json()[0]
+                assert running['status'] == 'running' and running['heartbeat_state'] == 'fresh'
+                with pytest.raises(RuntimeError, match='heartbeat data exists'):
+                    command.downgrade(config, '0009')
+                with worker_engine.begin() as connection:
+                    connection.execute(text('UPDATE task_runs SET heartbeat_at = :ts WHERE id = :id'), {'id': run_id, 'ts': datetime.now(timezone.utc) - timedelta(minutes=3)})
+                assert client.get(f'/api/tasks/{task_id}/runs').json()[0]['heartbeat_state'] == 'stale'
+                with Session(worker_engine) as session:
+                    assert heartbeat_run(session, run_id)
+                assert client.get(f'/api/tasks/{task_id}/runs').json()[0]['heartbeat_state'] == 'fresh'
+                # Disposable test database: clear heartbeats to exercise the older history guard.
+                with worker_engine.begin() as connection:
+                    connection.execute(text('UPDATE task_runs SET heartbeat_at = NULL WHERE id = :id'), {'id': run_id})
+                assert client.get(f'/api/tasks/{task_id}/runs').json()[0]['heartbeat_state'] == 'unknown'
                 with pytest.raises(RuntimeError, match='task run history'):
                     command.downgrade(config, '0008')
+                command.upgrade(config, 'head')
                 with Session(worker_engine) as session:
                     assert resolve_run(session, run_id)
-                provider = Mock(complete=AsyncMock(return_value=CompletionResult('draft output', TokenUsage(7, 2))), close=AsyncMock())
+                    assert not heartbeat_run(session, run_id)
+                monkeypatch.setattr('app.task_worker.HEARTBEAT_INTERVAL_SECONDS', 0.01)
+                heartbeat_writer = Mock(wraps=__import__('app.task_worker', fromlist=['_write_heartbeat'])._write_heartbeat)
+                monkeypatch.setattr('app.task_worker._write_heartbeat', heartbeat_writer)
+                async def slow_success(_request):
+                    await asyncio.sleep(0.08)
+                    return CompletionResult('draft output', TokenUsage(7, 2))
+                provider = Mock(complete=AsyncMock(side_effect=slow_success), close=AsyncMock())
                 assert asyncio.run(run_once(worker_engine, task_id, 'test-key', lambda _: provider)) == 0
+                assert heartbeat_writer.call_count > 0
                 assert 'Private instruction' in provider.complete.await_args.args[0].prompt
                 assert client.get(f'/api/tasks/{task_id}').json()['status'] == 'pending'
                 runs = client.get(f'/api/tasks/{task_id}/runs').json()
                 assert [r['status'] for r in runs] == ['succeeded', 'resolved']
+                assert all(r['heartbeat_state'] == 'not_running' for r in runs)
                 assert runs[0]['input_tokens'] == 7 and runs[0]['output_tokens'] == 2
                 assert 'Private instruction' not in str(runs) and 'draft output' not in str(runs)
                 assert 'draft output' in capsys.readouterr().out

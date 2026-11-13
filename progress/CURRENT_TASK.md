@@ -1,3 +1,3 @@
 # Current task
 
-Verify one-shot batch scheduler and locked first-run claims on PostgreSQL CI, then implement worker lifecycle, isolation and safe recovery.
+Verify worker heartbeat migration and observation on PostgreSQL and browser CI; then implement authenticated lifecycle and safe recovery.
