@@ -1,3 +1,3 @@
 # Current task
 
-Design actual agent execution and lifecycle without reporting nonexistent processes as active. PostgreSQL, frontend, prototype and CodeQL checks passed at `559ea93`.
+Verify task CRUD and migration on PostgreSQL CI, then continue provider research and safe execution design.

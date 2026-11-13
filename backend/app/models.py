@@ -26,3 +26,13 @@ class Agent(Base):
     provider: Mapped[str] = mapped_column(String(100), nullable=False, server_default=text("''"))
     model: Mapped[str] = mapped_column(String(200), nullable=False, server_default=text("''"))
     project_id: Mapped[int | None] = mapped_column(ForeignKey('projects.id', ondelete='SET NULL'), nullable=True, index=True)
+
+
+class Task(Base):
+    __tablename__ = 'tasks'
+    __table_args__ = (CheckConstraint("status IN ('pending', 'cancelled')", name='ck_tasks_status'),)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    project_id: Mapped[int] = mapped_column(ForeignKey('projects.id', ondelete='RESTRICT'), nullable=False, index=True)
+    title: Mapped[str] = mapped_column(String(200), nullable=False)
+    description: Mapped[str] = mapped_column(Text, nullable=False, server_default=text("''"))
+    status: Mapped[str] = mapped_column(String(20), nullable=False, server_default=text("'pending'"))

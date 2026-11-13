@@ -83,6 +83,25 @@ def test_migration_and_readiness(tmp_path, monkeypatch):
             assert client.post(f'/api/agents/{agent_id}/start', json={}).status_code == 404
             assert client.get('/api/agents?limit=101').status_code == 422
             assert client.patch(f'/api/agents/{agent_id}', json={'execution_status': 'running'}).status_code == 422
+            assert client.post('/api/tasks', json={'project_id': 2147483647, 'title': 'Missing'}).status_code == 422
+            assert client.post('/api/tasks', json={'project_id': project_id, 'title': '   '}).status_code == 422
+            response = client.post('/api/tasks', json={'project_id': project_id, 'title': '  Plan  ', 'description': 'Details'})
+            assert response.status_code == 201
+            task = response.json()
+            assert task['title'] == 'Plan' and task['status'] == 'pending'
+            task_id = task['id']
+            assert client.get(f'/api/tasks?project_id={project_id}').json()[0]['id'] == task_id
+            assert client.get('/api/tasks?project_id=2147483647').json() == []
+            assert client.get('/api/tasks?limit=101').status_code == 422
+            assert client.patch(f'/api/tasks/{task_id}', json={'title': 'Updated'}).json()['title'] == 'Updated'
+            assert client.patch(f'/api/tasks/{task_id}', json={'status': 'running'}).status_code == 422
+            assert client.post(f'/api/tasks/{task_id}/cancel', json={}).json()['status'] == 'cancelled'
+            assert client.post(f'/api/tasks/{task_id}/cancel', json={}).json()['status'] == 'cancelled'
+            assert client.post('/api/tasks/2147483647/cancel', json={}).status_code == 404
+            assert client.delete(f'/api/projects/{project_id}').status_code == 409
+            assert client.get(f'/api/tasks/{task_id}').status_code == 200
+            assert client.delete(f'/api/tasks/{task_id}').status_code == 204
+            assert client.get(f'/api/tasks/{task_id}').status_code == 404
             assert client.delete(f'/api/projects/{project_id}').status_code == 204
             assert client.get(f'/api/agents/{agent_id}').json()['project_id'] is None
             assert client.delete(f'/api/agents/{agent_id}').status_code == 204

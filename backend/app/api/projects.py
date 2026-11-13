@@ -4,7 +4,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Request, Response
 from sqlalchemy import select
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.models import Project
@@ -74,5 +74,9 @@ def update_project(project_id: ProjectId, data: ProjectUpdate, db: Db) -> Projec
 def delete_project(project_id: ProjectId, db: Db) -> Response:
     project = find_project(db, project_id)
     db.delete(project)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=409, detail='Project has dependent records; remove them before deleting') from None
     return Response(status_code=204)

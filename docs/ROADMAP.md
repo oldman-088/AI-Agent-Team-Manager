@@ -6,7 +6,7 @@ The master specification supplied by the user is the authoritative requirements 
 - Phase 1 — **In Progress**: FastAPI, React/TypeScript, PostgreSQL, configuration, health and Alembic. Foundation implemented; PostgreSQL CI validation and further work pending. Acceptance: documented startup, migrations and automated integration tests against PostgreSQL.
 - Phase 2 — **In Progress**: initial configuration registry implemented; lifecycle and heartbeat not implemented. Acceptance: states reflect real processes; stale-heartbeat recovery tests.
 - Phase 3 — **Not Started**: provider interfaces and at least one real provider; credentials protected, real integration tested separately.
-- Phase 4 — **Not Started**: durable coordination, dependencies and safe execution.
+- Phase 4 — **In Progress**: project-scoped planning tasks only; durable coordination, dependencies and safe execution remain unimplemented.
 - Phase 5 — **Not Started**: isolated Playwright sessions and persistent profiles.
 - Phase 6 — **Not Started**: projects and authorized GitHub integration.
 - Phase 7 — **Not Started**: scoped shared memory.

@@ -95,3 +95,42 @@ class AgentView(BaseModel):
     project_id: int | None
     # Configuration records are not agent processes. No inferred runtime state.
     execution_status: Literal['not_implemented'] = 'not_implemented'
+
+
+class TaskCreate(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    project_id: int = Field(ge=1, le=2147483647)
+    title: str = Field(min_length=1, max_length=200)
+    description: str = Field(default='', max_length=4000)
+
+    @field_validator('title')
+    @classmethod
+    def clean_title(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError('title must not be blank')
+        return value
+
+
+class TaskUpdate(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    title: str | None = Field(default=None, min_length=1, max_length=200)
+    description: str | None = Field(default=None, max_length=4000)
+
+    @field_validator('title')
+    @classmethod
+    def clean_title(cls, value: str | None) -> str | None:
+        if value is not None:
+            value = value.strip()
+            if not value:
+                raise ValueError('title must not be blank')
+        return value
+
+
+class TaskView(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    project_id: int
+    title: str
+    description: str
+    status: Literal['pending', 'cancelled']
