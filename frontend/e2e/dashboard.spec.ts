@@ -54,3 +54,31 @@ test('create records and switch language with RTL and keyboard access', async ({
   await expect(taskSection.locator('li')).toContainText('Completed');
   await expect(page.getByRole('region', {name: 'Recent task activity'}).locator('li').first()).toContainText('Task completed manually');
 });
+
+test('manage task dependencies and inspect readiness', async ({page}) => {
+  await page.goto('/');
+  await expect(page.getByRole('status')).toContainText('Ready');
+  await page.getByLabel('Project name').fill('Dependencies project');
+  await page.getByRole('button', {name: 'Create project'}).click();
+  const section = page.getByRole('region', {name: 'Planning tasks'});
+  for (const title of ['Consumer', 'Prerequisite']) {
+    await section.getByLabel('Project').selectOption({label: 'Dependencies project'});
+    await page.getByLabel('Task title').fill(title);
+    await page.getByRole('button', {name: 'Create task'}).click();
+    await expect(section.locator('li').filter({hasText: title}).first()).toBeVisible();
+  }
+  const consumer = await page.getByLabel('Select task').locator('option').filter({hasText: 'Consumer'}).getAttribute('value');
+  await page.getByLabel('Select task').selectOption(consumer!);
+  await expect(page.getByText('Ready for manual completion', {exact: true})).toBeVisible();
+  const prerequisite = await page.getByLabel('Prerequisite', {exact: true}).locator('option').filter({hasText: 'Prerequisite'}).getAttribute('value');
+  await page.getByLabel('Prerequisite', {exact: true}).selectOption(prerequisite!);
+  await page.getByRole('button', {name: 'Add dependency'}).click();
+  await expect(page.getByText('Not ready for manual completion', {exact: true})).toBeVisible();
+  await expect(page.getByText(/Incomplete prerequisites:/)).toContainText('Prerequisite');
+  await section.locator('li').filter({hasText: 'Consumer'}).first().getByRole('button', {name: 'Mark complete manually'}).click();
+  await expect(page.getByRole('alert')).toContainText('Could not complete task');
+  await page.getByRole('button', {name: /Remove dependency: Prerequisite/}).click();
+  await expect(page.getByText('Ready for manual completion', {exact: true})).toBeVisible();
+  await page.getByLabel('Language').selectOption('ar');
+  await expect(page.getByText('جاهزة للإكمال اليدوي')).toBeVisible();
+});

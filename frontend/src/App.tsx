@@ -1,3 +1,4 @@
+import { TaskDetails } from './TaskDetails';
 import { useEffect, useState, type FormEvent } from 'react';
 import { fetchHealth, type Health } from './health';
 import { createProject, listProjects, type Project } from './projects';
@@ -24,6 +25,7 @@ export function App() {
   const [projectId, setProjectId] = useState('');
   const [taskTitle, setTaskTitle] = useState('');
   const [taskProject, setTaskProject] = useState('');
+  const [selectedTask, setSelectedTask] = useState('');
   const [saving, setSaving] = useState(false);
   const [savingAgent, setSavingAgent] = useState(false);
   const [savingTask, setSavingTask] = useState(false);
@@ -110,6 +112,9 @@ export function App() {
         <button disabled={savingTask || health !== 'ready' || !projects.length}>{savingTask ? t.saving : t.createTask}</button>
       </form>
       {tasks.length ? <ul>{tasks.map(task => <li key={task.id}><strong><bdi>{task.title}</bdi></strong> · {statusLabel(locale, task.status)} · <bdi>{projects.find(project => project.id === task.project_id)?.name ?? `#${task.project_id}`}</bdi>{task.status === 'pending' && <button className="task-action" disabled={completingId !== null} onClick={() => void finishTask(task.id)}>{t.manualComplete}</button>}</li>)}</ul> : <p>{t.noTasks}</p>}
+      <h3>{t.details}</h3>
+      <label>{t.selectTask}<select value={selectedTask} onChange={e => setSelectedTask(e.target.value)}><option value="">{t.chooseTask}</option>{tasks.map(task => <option key={task.id} value={task.id}>{task.title} (#{task.id})</option>)}</select></label>
+      {tasks.find(task => String(task.id) === selectedTask) && <TaskDetails key={selectedTask} task={tasks.find(task => String(task.id) === selectedTask)!} tasks={tasks} locale={locale} onChanged={refresh} />}
     </section>
     <section aria-labelledby="activity-heading"><h2 id="activity-heading">{t.activity}</h2><p>{t.activityHelp}</p>
       {events.length ? <ul>{events.map(event => <li key={event.id}>{eventLabel(locale, event.event_type)} · <bdi>{event.created_at}</bdi>{event.task_id !== null && <> · <bdi>#{event.task_id}</bdi></>}</li>)}</ul> : <p>{t.noActivity}</p>}

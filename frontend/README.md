@@ -17,3 +17,5 @@ Install backend test dependencies in an active Python environment, run `npm ci`,
 A pending planning task may be marked completed manually from the dashboard if its direct dependencies are completed. This is the user's assertion, not evidence of agent execution or review. Dependency editing and readiness details remain API-only.
 
 Recent task activity is shown as metadata with database-provided timestamps. It is not a tamper-proof or authenticated security audit, and the UI currently loads only the first 100 events.
+
+Select a loaded task to inspect its dependency IDs and readiness snapshot, and add or remove prerequisites from the same project's loaded tasks. Choices are limited to the first 100 tasks loaded in the dashboard; dependencies outside that page are shown by ID. Readiness can become stale, and the server rechecks it on manual completion. The API remains authoritative for cycles, status and concurrent edits.

@@ -21,3 +21,20 @@ export async function completeTask(id: number, fetcher: typeof fetch = fetch): P
   if (!response.ok) throw new Error('Could not complete task');
   return response.json();
 }
+
+export interface Readiness { task_id: number; status: Task['status']; ready: boolean; blocking_dependencies: number[] }
+
+export async function getDependencies(id: number, fetcher: typeof fetch = fetch): Promise<number[]> {
+  const response = await fetcher(`/api/tasks/${id}/dependencies`);
+  if (!response.ok) throw new Error('Could not load dependencies');
+  return response.json();
+}
+export async function getReadiness(id: number, fetcher: typeof fetch = fetch): Promise<Readiness> {
+  const response = await fetcher(`/api/tasks/${id}/readiness`);
+  if (!response.ok) throw new Error('Could not load readiness');
+  return response.json();
+}
+export async function changeDependency(id: number, dependencyId: number, add: boolean, fetcher: typeof fetch = fetch): Promise<void> {
+  const response = await fetcher(`/api/tasks/${id}/dependencies/${dependencyId}`, {method: add ? 'PUT' : 'DELETE'});
+  if (!response.ok) throw new Error('Could not change dependency');
+}

@@ -19,3 +19,7 @@ Added a metadata-only task activity history, persisted in the same transaction a
 ## Limitations and next actions
 
 Project license remains unselected. PostgreSQL is unavailable locally; the activity tests passed in CI. Design authenticated and tamper-resistant auditing and safe execution. Agent execution, automatic scheduling, authentication, comprehensive audit and most platform capabilities are incomplete. See JSON report for file inventory; duration unknown.
+
+## Dependency UI checkpoint
+
+Added localized task dependency inspection, addition and removal, and readiness snapshot with blocker IDs. Selection is limited to the first 100 loaded tasks; server revalidates changes and completion. Frontend typecheck, 14 tests, build and npm audit passed locally before the final small error-state adjustment. New Chromium E2E pending CI. Acceptance remains 4/30.
