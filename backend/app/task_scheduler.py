@@ -26,12 +26,13 @@ def select_candidates(db: Session, project_id: int, limit: int) -> list[int]:
     blocked = (select(TaskDependency.task_id).join(prerequisite, prerequisite.id == TaskDependency.depends_on_id)
                .where(TaskDependency.task_id == Task.id, prerequisite.status != 'completed').exists())
     has_history = select(TaskRun.id).where(TaskRun.task_id == Task.id).exists()
+    agent_unresolved = select(TaskRun.id).where(TaskRun.agent_id == Agent.id, TaskRun.status.in_(['running', 'uncertain'])).exists()
     query = (select(Task.id).join(Project, Project.id == Task.project_id)
              .join(TaskAssignment, TaskAssignment.task_id == Task.id)
              .join(Agent, Agent.id == TaskAssignment.agent_id)
              .where(Task.project_id == project_id, Project.status == 'active', Task.status == 'pending',
                     Agent.project_id == Task.project_id, func.lower(func.trim(Agent.provider)) == 'openai',
-                    func.length(func.trim(Agent.model)) > 0, ~blocked, ~has_history)
+                    func.length(func.trim(Agent.model)) > 0, ~blocked, ~has_history, ~agent_unresolved)
              .order_by(Task.id).limit(limit))
     return list(db.scalars(query))
 

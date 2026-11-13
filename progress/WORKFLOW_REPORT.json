@@ -1,9 +1,9 @@
 {
-  "last_updated_utc": "2026-11-13T19:36:33+00:00",
+  "last_updated_utc": "2026-11-13T20:20:55+00:00",
   "overall_completion_percentage": null,
   "completion_note": "Total project effort completion unknown. The acceptance-criteria indicator is conservative and equally weighted; it is not an estimate of effort or delivery date.",
   "current_phase": "Phases 0–4 and partial Phase 10 in progress",
-  "current_task": "Design worker isolation and safe remote recovery",
+  "current_task": "Verify scheduler selection of available agents on PostgreSQL CI",
   "completed_tasks": [
     "Inspected repository, branches, permissions and local tools",
     "Researched candidate repositories and documented preliminary findings",
@@ -53,11 +53,12 @@
     "Added optional local shared API bearer gate and in-memory dashboard support",
     "Added read-only cross-project unresolved worker inspection",
     "Added precautionary manual-resolution heartbeat guard",
-    "Added non-billable scheduler candidate preview"
+    "Added non-billable scheduler candidate preview",
+    "Improved scheduler selection to bypass agents with unresolved runs"
   ],
   "in_progress_tasks": [
-    "Implement worker isolation and safe recovery",
-    "Design per-user authorization and budget controls"
+    "Verify scheduler selection skips busy agents on PostgreSQL",
+    "Implement safe worker recovery and isolation"
   ],
   "pending_tasks": [
     "Full project and agent management",
@@ -80,24 +81,17 @@
   ],
   "tests_executed": [
     {
-      "command": "cd backend && pytest -q",
-      "result": "27 passed on SQLite including dry-run with no key, no claims and mocked forbidden provider construction; Starlette warning"
-    },
-    {
-      "command": "gh pr checks 4 --watch at dbe17f8",
-      "result": "All checks passed including PostgreSQL heartbeat resolution race, Chromium and CodeQL"
-    },
-    {
-      "command": "gh pr checks 4 --watch at 91b14e4",
-      "result": "All passed including PostgreSQL dry-run, authenticated Chromium, frontend, Windows/Ubuntu prototype matrix and CodeQL; no live provider calls"
+      "command": "cd backend && ../.venv/bin/pytest -q",
+      "result": "27 passed on SQLite including busy agent starvation and manual subsequent batch; provider mocked; Starlette/Pydantic warnings"
     }
   ],
-  "build_status": "All PR checks passed at 91b14e4; later commits require separate verification.",
+  "build_status": "PostgreSQL and full GitHub CI pending",
   "errors_encountered": [
-    "Starlette httpx deprecation warning persists."
+    "New workspace had no virtualenv; created ignored environment and installed backend test dependencies.",
+    "Starlette httpx deprecation and occasional Pydantic warning persist."
   ],
   "fixes_implemented": [
-    "Added read-only bounded scheduler preview without credentials, confirmations, claims or provider calls."
+    "Exclude agents with unresolved runs in advisory scheduler selection to avoid starving available agents; preserve locked claim checks and no automatic retry."
   ],
   "blockers": [
     "No project license selected",
@@ -108,7 +102,7 @@
   ],
   "next_actions": [
     "Verify PostgreSQL and full GitHub CI",
-    "Design process isolation and safe remote recovery",
+    "Implement worker isolation and safe recovery",
     "Implement per-user authorization and budget controls"
   ],
   "estimated_remaining_work": "26 of 30 full acceptance criteria remain unverified; duration unknown.",

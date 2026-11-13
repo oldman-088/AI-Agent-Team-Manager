@@ -466,7 +466,7 @@ def test_migration_and_readiness(tmp_path, monkeypatch, capsys):
                         prepare_run(session, batch_tasks[0], first_run_only=True, project_id=batch_project)
                 assert client.patch(f'/api/projects/{batch_project}', json={'status': 'active'}).status_code == 200
                 success = CompletionResult('draft', TokenUsage(1, 1))
-                provider = Mock(complete=AsyncMock(side_effect=[success, RuntimeError('private secret'), success]), close=AsyncMock())
+                provider = Mock(complete=AsyncMock(side_effect=[success, RuntimeError('private secret'), success, success]), close=AsyncMock())
                 assert asyncio.run(run_batch(batch_engine, batch_project, 3, 'key', lambda _: provider)) == 1
                 assert provider.complete.await_count == 2
                 assert client.get(f'/api/tasks/{batch_tasks[0]}/runs').json()[0]['status'] == 'succeeded'
@@ -475,17 +475,26 @@ def test_migration_and_readiness(tmp_path, monkeypatch, capsys):
                 assert client.get(f'/api/tasks/{batch_tasks[0]}').json()['status'] == 'pending'
                 assert 'private secret' not in capsys.readouterr().err
                 with Session(batch_engine) as session:
-                    assert select_candidates(session, batch_project, 20) == [batch_tasks[2]]
+                    assert select_candidates(session, batch_project, 20) == []
                 assert asyncio.run(run_once(batch_engine, batch_tasks[0], 'key', lambda _: provider, first_run_only=True, project_id=batch_project)) == 2
                 assert provider.complete.await_count == 2
-                # The uncertain run holds the agent slot even for a different task.
-                assert asyncio.run(run_batch(batch_engine, batch_project, 20, 'key', lambda _: provider)) == 2
+                # The uncertain run holds the agent slot; the selector skips it.
+                assert asyncio.run(run_batch(batch_engine, batch_project, 20, 'key', lambda _: provider)) == 0
                 assert provider.complete.await_count == 2
+                # A busy earlier agent must not starve a different available agent.
+                other_batch_agent = client.post('/api/agents', json={'name': 'Other worker', 'role': 'QA', 'project_id': batch_project, 'provider': 'openai', 'model': 'mock-model'}).json()['id']
+                independent = client.post('/api/tasks', json={'project_id': batch_project, 'title': 'Independent'}).json()['id']
+                assert client.put(f'/api/tasks/{independent}/assignment', json={'agent_id': other_batch_agent}).status_code == 200
+                with Session(batch_engine) as session:
+                    assert select_candidates(session, batch_project, 1) == [independent]
+                # Selection is advisory: a later claim still checks under lock.
+                assert asyncio.run(run_batch(batch_engine, batch_project, 1, 'key', lambda _: provider)) == 0
+                assert provider.complete.await_count == 3
                 uncertain_id = client.get(f'/api/tasks/{batch_tasks[1]}/runs').json()[0]['id']
                 with Session(batch_engine) as session:
                     assert resolve_run(session, uncertain_id)
                 assert asyncio.run(run_batch(batch_engine, batch_project, 20, 'key', lambda _: provider)) == 0
-                assert provider.complete.await_count == 3
+                assert provider.complete.await_count == 4
                 with batch_engine.begin() as connection:
                     connection.execute(text('DELETE FROM task_runs WHERE task_id IN (SELECT id FROM tasks WHERE project_id = :project_id)'), {'project_id': batch_project})
             finally:
@@ -493,6 +502,8 @@ def test_migration_and_readiness(tmp_path, monkeypatch, capsys):
             assert client.delete(f'/api/tasks/{batch_tasks[3]}/dependencies/{batch_tasks[2]}').status_code == 204
             for item in batch_tasks:
                 assert client.delete(f'/api/tasks/{item}').status_code == 204
+            assert client.delete(f'/api/tasks/{independent}').status_code == 204
+            assert client.delete(f'/api/agents/{other_batch_agent}').status_code == 204
             assert client.delete(f'/api/agents/{batch_agent}').status_code == 204
             assert client.delete(f'/api/projects/{batch_project}').status_code == 204
             # Global capacity serializes claims across projects/agents; uncertain runs retain a slot.
