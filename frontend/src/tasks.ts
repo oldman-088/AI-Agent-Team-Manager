@@ -35,6 +35,6 @@ export async function getReadiness(id: number, fetcher: typeof fetch = fetch): P
   return response.json();
 }
 export async function changeDependency(id: number, dependencyId: number, add: boolean, fetcher: typeof fetch = fetch): Promise<void> {
-  const response = await fetcher(`/api/tasks/${id}/dependencies/${dependencyId}`, {method: add ? 'PUT' : 'DELETE'});
+  const response = await fetcher(`/api/tasks/${id}/dependencies/${dependencyId}`, {method: add ? 'PUT' : 'DELETE', ...(add ? {headers: {'Content-Type': 'application/json'}, body: '{}'} : {})});
   if (!response.ok) throw new Error('Could not change dependency');
 }

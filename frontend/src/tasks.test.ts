@@ -11,3 +11,12 @@ describe('tasks API', () => {
     await expect(listTasks(vi.fn().mockResolvedValue({ok: false}))).rejects.toThrow('Could not load tasks');
   });
 });
+
+it('sends JSON for dependency addition and no body for removal', async () => {
+  const { changeDependency } = await import('./tasks');
+  const fetcher = vi.fn().mockResolvedValue({ok: true});
+  await changeDependency(1, 2, true, fetcher);
+  expect(fetcher).toHaveBeenCalledWith('/api/tasks/1/dependencies/2', {method: 'PUT', headers: {'Content-Type': 'application/json'}, body: '{}'});
+  await changeDependency(1, 2, false, fetcher);
+  expect(fetcher).toHaveBeenLastCalledWith('/api/tasks/1/dependencies/2', {method: 'DELETE'});
+});
