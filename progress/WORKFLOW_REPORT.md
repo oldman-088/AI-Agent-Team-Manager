@@ -24,12 +24,12 @@ See `WORKFLOW_REPORT.json` for the file inventory.
 
 - Python unit/API tests: 2 passed on Linux, Python 3.11.2.
 - Python compileall: passed. Documentation inventory: 10 files present. `git diff --check`: passed before report update.
-- Initial GitHub Actions Ubuntu matrix passed; Windows matrix failed. Exact logs could not be downloaded. Explicit SQLite connection cleanup has been added as a likely fix; re-validation is pending. CodeQL is pending. React build: not implemented.
+- Initial Windows jobs failed; after explicit SQLite connection cleanup, [run 43464794399](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43464794399) passed Ubuntu and Windows with Python 3.11 and 3.12 at commit `add589d`. Exact original failure cause remains unconfirmed because logs could not be downloaded. [CodeQL run 43464647643](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43464647643) passed at `ff029a1`. Newer commits require their own checks. React build: not implemented.
 
 ## Errors, fixes and blockers
 
 - Direct raw GitHub README URLs were inaccessible; used GitHub API instead.
-- The initial Windows CI tests failed; logs were inaccessible. SQLite connections were explicitly closed as a likely fix; a re-run is required. CI also warned about Node 20 action deprecation.
+- The initial Windows CI tests failed; logs were inaccessible. SQLite connections were explicitly closed as a likely fix; the subsequent matrix passed. CI also warned about Node 20 action deprecation.
 - Project license not selected; Docker and psql unavailable here; Windows not validated.
 
 ## Next actions and remaining work
