@@ -193,6 +193,15 @@ def test_migration_and_readiness(tmp_path, monkeypatch, capsys):
                     results = [a.result(timeout=20), b.result(timeout=20)]
                 assert sum(item is not None for item in results) == 1
                 run_id = next(item for item in results if item is not None)
+                # Discover unresolved claims globally without task contents or provider output.
+                unresolved = client.get('/api/runs/unresolved').json()
+                assert len(unresolved) == 1 and unresolved[0]['id'] == run_id
+                assert unresolved[0]['project_id'] == project_id and unresolved[0]['heartbeat_state'] == 'fresh'
+                assert 'model' not in unresolved[0] and 'Private instruction' not in str(unresolved)
+                assert client.get(f'/api/runs/unresolved?after_id={run_id}').json() == []
+                assert client.get(f'/api/runs/unresolved?project_id={project_id}').json() == unresolved
+                assert client.get('/api/runs/unresolved?limit=0').status_code == 422
+                assert client.get('/api/runs/unresolved?project_id=0').status_code == 422
                 running = client.get(f'/api/tasks/{task_id}/runs').json()[0]
                 assert running['status'] == 'running' and running['heartbeat_state'] == 'fresh'
                 with pytest.raises(RuntimeError, match='unresolved worker runs'):
@@ -200,6 +209,7 @@ def test_migration_and_readiness(tmp_path, monkeypatch, capsys):
                 with worker_engine.begin() as connection:
                     connection.execute(text('UPDATE task_runs SET heartbeat_at = :ts WHERE id = :id'), {'id': run_id, 'ts': datetime.now(timezone.utc) - timedelta(minutes=3)})
                 assert client.get(f'/api/tasks/{task_id}/runs').json()[0]['heartbeat_state'] == 'stale'
+                assert client.get('/api/runs/unresolved').json()[0]['heartbeat_state'] == 'stale'
                 with Session(worker_engine) as session:
                     assert heartbeat_run(session, run_id)
                 assert client.get(f'/api/tasks/{task_id}/runs').json()[0]['heartbeat_state'] == 'fresh'
@@ -237,6 +247,7 @@ def test_migration_and_readiness(tmp_path, monkeypatch, capsys):
                 failed = Mock(complete=AsyncMock(side_effect=RuntimeError('secret')), close=AsyncMock())
                 assert asyncio.run(run_once(worker_engine, task_id, 'key', lambda _: failed)) == 1
                 uncertain = client.get(f'/api/tasks/{task_id}/runs').json()[0]
+                assert client.get('/api/runs/unresolved').json()[0]['status'] == 'uncertain'
                 assert uncertain['status'] == 'uncertain'
                 assert 'secret' not in capsys.readouterr().err
                 assert asyncio.run(run_once(worker_engine, task_id, 'key', lambda _: provider)) == 2
@@ -244,6 +255,7 @@ def test_migration_and_readiness(tmp_path, monkeypatch, capsys):
                 with Session(worker_engine) as session:
                     assert resolve_run(session, uncertain['id'])
                     assert not resolve_run(session, uncertain['id'])
+                assert client.get('/api/runs/unresolved').json() == []
                 # Disposable database only: history must be explicitly handled before downgrade/deletion.
                 with worker_engine.begin() as connection:
                     connection.execute(text('DELETE FROM task_runs'))

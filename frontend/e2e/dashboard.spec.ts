@@ -12,9 +12,14 @@ test('create records and switch language with RTL and keyboard access', async ({
   });
   expect(rejected.status()).toBe(403);
   expect((await page.request.get('/api/tasks')).status()).toBe(401);
+  expect((await page.request.get('/api/runs/unresolved')).status()).toBe(401);
+  const unresolvedResponse = await page.request.get('/api/runs/unresolved', {headers: {'Authorization': `Bearer ${testToken}`}});
+  expect(unresolvedResponse.status()).toBe(200);
+  expect(await unresolvedResponse.json()).toEqual([]);
   await page.goto('/');
   await expect(page.getByRole('status')).toContainText('Ready');
   await authenticate(page);
+  await expect(page.getByText('No unresolved runs found.')).toBeVisible();
 
   await page.getByLabel('Project name').fill('مشروع AATM');
   await page.getByLabel('Description').fill('Browser test');

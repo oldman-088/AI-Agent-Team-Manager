@@ -64,3 +64,7 @@ Serialize application claims across projects with a PostgreSQL singleton row loc
 ## 2026-11-13: Optional local shared API bearer gate
 
 As an interim local-only safeguard, accept a configured high-entropy shared bearer secret for `/api` routes; absent configuration remains unauthenticated for compatibility, while an explicitly empty or invalid secret fails closed at startup. Use constant-time comparison and avoid token URLs, persistent browser storage and reflected errors; health and schema are public. The frontend stores the token in memory only and sends it solely to same-origin relative API URLs. This is not user authentication, RBAC, rate limiting, TLS, secret rotation service or a substitute for database/filesystem access control. Workers directly access the DB, and XSS, hostile local processes and extensions remain threats. Evaluate mature identity/session libraries separately before production or remote access.
+
+## 2026-11-13: Unresolved run discovery
+
+Provide bounded, read-only, keyset-paginated cross-project unresolved run metadata and a first-page dashboard view to help operators locate capacity held by uncertain or interrupted runs. No mutation, automatic expiry, lease or retry is added. Heartbeat interpretations share one implementation and remain advisory; `not_running` describes the database status only, not evidence of process or remote termination. Concurrent changes between pages mean this is not an atomic inventory. The optional local bearer gate applies; default unauthenticated operation remains local-only.

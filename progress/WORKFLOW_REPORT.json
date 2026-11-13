@@ -1,9 +1,9 @@
 {
-  "last_updated_utc": "2026-11-13T19:06:12+00:00",
+  "last_updated_utc": "2026-11-13T19:15:06+00:00",
   "overall_completion_percentage": null,
   "completion_note": "Total project effort completion unknown. The acceptance-criteria indicator is conservative and equally weighted; it is not an estimate of effort or delivery date.",
   "current_phase": "Phases 0–4 and partial Phase 10 in progress",
-  "current_task": "Design safe recovery, full identity and worker isolation",
+  "current_task": "Verify unresolved worker inspection on PostgreSQL and browser CI",
   "completed_tasks": [
     "Inspected repository, branches, permissions and local tools",
     "Researched candidate repositories and documented preliminary findings",
@@ -50,11 +50,12 @@
     "Added opt-in bounded sequential scheduling for unattempted ready assigned tasks",
     "Added advisory local worker heartbeat and visibility without automatic retry",
     "Implemented shared 20-unresolved-run and one-per-agent claim limits",
-    "Added optional local shared API bearer gate and in-memory dashboard support"
+    "Added optional local shared API bearer gate and in-memory dashboard support",
+    "Added read-only cross-project unresolved worker inspection"
   ],
   "in_progress_tasks": [
-    "Implement safe worker recovery and isolation",
-    "Design per-user identity and authorization"
+    "Verify cross-project unresolved run inspection on CI",
+    "Design safe recovery and isolation"
   ],
   "pending_tasks": [
     "Full project and agent management",
@@ -64,58 +65,47 @@
     "Browser end-to-end testing"
   ],
   "files_created": [
-    "backend/tests/test_api_auth.py",
-    "frontend/src/api.ts",
-    "frontend/src/api.test.ts"
+    "backend/app/services/run_inspection.py",
+    "backend/tests/test_run_inspection.py",
+    "frontend/src/UnresolvedRuns.tsx",
+    "frontend/src/UnresolvedRuns.test.tsx"
   ],
   "files_modified": [
-    "backend/app/config.py",
-    "backend/app/security.py",
+    "backend/app/api/task_runs.py",
     "backend/app/main.py",
-    "backend/e2e_server.py",
-    "frontend/src/projects.ts",
-    "frontend/src/agents.ts",
-    "frontend/src/tasks.ts",
-    "frontend/src/events.ts",
-    "frontend/src/TaskRuns.tsx",
+    "backend/tests/test_foundation.py",
     "frontend/src/App.tsx",
     "frontend/src/i18n/messages.ts",
     "frontend/e2e/dashboard.spec.ts",
     "backend/README.md",
-    "frontend/README.md",
-    "docs/RESEARCH.md",
     "docs/TECHNICAL_DECISIONS.md",
     "progress/تقرير_التقدم.md",
     "progress/WORKFLOW_REPORT.md",
     "progress/WORKFLOW_REPORT.json",
     "progress/PROJECT_STATUS.md",
-    "progress/CURRENT_TASK.md",
-    "progress/BLOCKERS.md"
+    "progress/CURRENT_TASK.md"
   ],
   "tests_executed": [
     {
       "command": "cd backend && pytest -q",
-      "result": "26 passed on SQLite including bearer gate and fail-closed invalid token; Starlette and occasional Pydantic warnings"
+      "result": "27 passed on SQLite; Starlette and occasional Pydantic warnings"
     },
     {
       "command": "cd frontend && npm run typecheck && npm test && npm run build",
-      "result": "18 tests and frontend build passed"
+      "result": "19 tests, typecheck and build passed"
     },
     {
       "command": "cd frontend && npm audit --audit-level=high",
       "result": "0 vulnerabilities"
-    },
-    {
-      "command": "gh pr checks 4 --watch at 545e009",
-      "result": "All passed including authenticated Chromium, PostgreSQL, frontend, prototype Windows/Ubuntu matrix and CodeQL; no live provider call"
     }
   ],
-  "build_status": "All PR checks passed at 545e009; later commits require separate verification.",
+  "build_status": "Unresolved inspection PostgreSQL and browser CI pending",
   "errors_encountered": [
-    "Starlette httpx deprecation and occasional Pydantic metadata warnings persist."
+    "New frontend test initially lacked jsdom annotation; fixed and retested.",
+    "Starlette httpx deprecation and occasional Pydantic warnings persist."
   ],
   "fixes_implemented": [
-    "Added optional shared bearer gate with constant-time check, in-memory frontend token, invalid configured token fail-closed, and stale refresh protection."
+    "Read-only cross-project unresolved run discovery with bounded keyset pagination and translated advisory dashboard."
   ],
   "blockers": [
     "No project license selected",
@@ -125,9 +115,9 @@
     "Heartbeat is advisory; no automatic safe recovery or run retention management"
   ],
   "next_actions": [
-    "Implement safe worker recovery and isolation",
-    "Design per-user identity and authorization",
-    "Add actual budget enforcement"
+    "Verify PostgreSQL and browser CI",
+    "Design safe worker recovery and isolation",
+    "Implement real identity/authorization and budget enforcement"
   ],
   "estimated_remaining_work": "26 of 30 full acceptance criteria remain unverified; duration unknown.",
   "acceptance_criteria_completion_percentage": 13.3,
