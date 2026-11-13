@@ -139,5 +139,5 @@ def delete_task(task_id: TaskId, db: Db) -> Response:
         db.commit()
     except IntegrityError:
         db.rollback()
-        raise HTTPException(status_code=409, detail='Task has dependencies; remove them before deleting') from None
+        raise HTTPException(status_code=409, detail='Task has dependencies or run history; resolve references before deleting') from None
     return Response(status_code=204)

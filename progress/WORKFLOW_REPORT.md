@@ -1,6 +1,6 @@
 # Workflow report
 
-Last updated: 2026-11-13T18:39:18+00:00
+Last updated: 2026-11-13T18:45:52+00:00
 
 ## Completion indicator
 
@@ -43,3 +43,7 @@ Moved from planning to a local, explicitly confirmed, potentially billable OpenA
 ## Local provider text CLI checkpoint
 
 Added a separate opt-in local single-shot text completion using stdin, with independent confirmations for data transfer and possible billing, bounded input/output, sanitized failures and terminal control filtering. Response is deliberately printed and may be retained by shell or caller; no task execution, HTTP endpoint, tool calls or autonomous agents. Backend 20 tests passed locally, using mocks, no live call. All PR checks passed at `cbd674e`: [PostgreSQL backend/mock provider tests](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43484523294), [Chromium](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43484523329), [frontend](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43484523463), [prototype matrix](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43484523300), and [CodeQL](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43484523528). Subsequent commits require separate verification. All checks, including the previously pending separate CodeQL status, also passed at `55c0760`. Acceptance remains 4/30.
+
+## Initial assigned-task execution checkpoint
+
+A manual local worker now claims one ready assigned task, snapshots its agent/task content, and calls the OpenAI adapter after explicit transfer and billing confirmations. A project lock and partial unique index prevent simultaneous unresolved runs. It stores metadata and token counts, prints an untrusted draft, and leaves task completion manual. Timeout/crash can leave uncertain/running state; no automatic retry or expiry; operator resolution requires stopping and investigating the original worker. Agent/task history restricts deletion and retention management is absent. Backend 21 tests passed on SQLite with mocked provider including competing claims and uncertainty; frontend typecheck, 17 tests and build passed, npm audit zero. PostgreSQL, browser and CodeQL CI pending. No live call, authentication, sandbox, scheduler, complete lifecycle or production readiness. Acceptance remains 4/30.

@@ -1,4 +1,6 @@
 import os
+import asyncio
+from unittest.mock import AsyncMock, Mock
 from concurrent.futures import ThreadPoolExecutor
 from threading import Barrier
 from pathlib import Path
@@ -9,10 +11,14 @@ from alembic.config import Config
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from sqlalchemy.orm import Session
 
 from app.config import Settings
 from app.database import make_engine
 from app.main import create_app
+from app.services.task_runs import prepare_run, resolve_run, RunRejected
+from app.task_worker import run_once
+from app.providers.base import CompletionResult, TokenUsage
 
 BACKEND = Path(__file__).resolve().parents[1]
 
@@ -32,7 +38,7 @@ def test_unavailable_database_does_not_leak_details():
         assert response.json() == {'status': 'not_ready', 'database': 'unavailable'}
 
 
-def test_migration_and_readiness(tmp_path, monkeypatch):
+def test_migration_and_readiness(tmp_path, monkeypatch, capsys):
     # A dedicated PostgreSQL CI service is used when configured. SQLite is a local smoke test only.
     url = os.environ.get('AATM_TEST_DATABASE_URL') or f"sqlite:///{(tmp_path / 'test.db').as_posix()}"
     monkeypatch.setenv('AATM_DATABASE_URL', url)
@@ -145,8 +151,56 @@ def test_migration_and_readiness(tmp_path, monkeypatch):
             assert sum(e['event_type'] == 'task.assigned' and e['task_id'] == task_id for e in history) == 1
             with pytest.raises(RuntimeError, match='task assignments exist'):
                 command.downgrade(config, '0007')
+            # SQLite may commit earlier DDL before the guard raises. Restore head.
+            command.upgrade(config, 'head')
             assert client.put(assignment_url, json={'agent_id': None}).json()['agent_id'] is None
             assert client.put(assignment_url, json={'agent_id': agent_id}).status_code == 200
+            # Durable claim serializes competing workers; no real provider requests occur.
+            assert client.patch(f'/api/agents/{agent_id}', json={'provider': 'openai', 'model': 'mock-model', 'instructions': 'Private instruction'}).status_code == 200
+            worker_engine = make_engine(url)
+            try:
+                barrier = Barrier(2)
+                def claim():
+                    barrier.wait(timeout=5)
+                    with Session(worker_engine) as session:
+                        try:
+                            return prepare_run(session, task_id).run_id
+                        except RunRejected:
+                            return None
+                with ThreadPoolExecutor(max_workers=2) as pool:
+                    a, b = pool.submit(claim), pool.submit(claim)
+                    results = [a.result(timeout=20), b.result(timeout=20)]
+                assert sum(item is not None for item in results) == 1
+                run_id = next(item for item in results if item is not None)
+                assert client.get(f'/api/tasks/{task_id}/runs').json()[0]['status'] == 'running'
+                with pytest.raises(RuntimeError, match='task run history'):
+                    command.downgrade(config, '0008')
+                with Session(worker_engine) as session:
+                    assert resolve_run(session, run_id)
+                provider = Mock(complete=AsyncMock(return_value=CompletionResult('draft output', TokenUsage(7, 2))), close=AsyncMock())
+                assert asyncio.run(run_once(worker_engine, task_id, 'test-key', lambda _: provider)) == 0
+                assert 'Private instruction' in provider.complete.await_args.args[0].prompt
+                assert client.get(f'/api/tasks/{task_id}').json()['status'] == 'pending'
+                runs = client.get(f'/api/tasks/{task_id}/runs').json()
+                assert [r['status'] for r in runs] == ['succeeded', 'resolved']
+                assert runs[0]['input_tokens'] == 7 and runs[0]['output_tokens'] == 2
+                assert 'Private instruction' not in str(runs) and 'draft output' not in str(runs)
+                assert 'draft output' in capsys.readouterr().out
+                failed = Mock(complete=AsyncMock(side_effect=RuntimeError('secret')), close=AsyncMock())
+                assert asyncio.run(run_once(worker_engine, task_id, 'key', lambda _: failed)) == 1
+                uncertain = client.get(f'/api/tasks/{task_id}/runs').json()[0]
+                assert uncertain['status'] == 'uncertain'
+                assert 'secret' not in capsys.readouterr().err
+                assert asyncio.run(run_once(worker_engine, task_id, 'key', lambda _: provider)) == 2
+                assert client.delete(f'/api/tasks/{task_id}').status_code == 409
+                with Session(worker_engine) as session:
+                    assert resolve_run(session, uncertain['id'])
+                    assert not resolve_run(session, uncertain['id'])
+                # Disposable database only: history must be explicitly handled before downgrade/deletion.
+                with worker_engine.begin() as connection:
+                    connection.execute(text('DELETE FROM task_runs'))
+            finally:
+                worker_engine.dispose()
             second = client.post('/api/tasks', json={'project_id': project_id, 'title': 'Second'}).json()['id']
             third = client.post('/api/tasks', json={'project_id': project_id, 'title': 'Third'}).json()['id']
             other_project = client.post('/api/projects', json={'name': 'Separate'}).json()['id']
@@ -203,6 +257,13 @@ def test_migration_and_readiness(tmp_path, monkeypatch):
             second_page = client.get(f'/api/tasks/ready?project_id={project_id}&limit=1&offset=1').json()
             assert second_page and first_page[0]['id'] != second_page[0]['id']
             assert client.get(f'/api/tasks/{lead}/readiness').json() == {'task_id': lead, 'ready': False, 'status': 'pending', 'blocking_dependencies': [prerequisite]}
+            worker_engine = make_engine(url)
+            try:
+                with Session(worker_engine) as session:
+                    with pytest.raises(RunRejected, match='completed prerequisites'):
+                        prepare_run(session, lead)
+            finally:
+                worker_engine.dispose()
             assert client.post(f'/api/tasks/{lead}/complete', json={}).status_code == 409
             assert client.post(f'/api/tasks/{prerequisite}/complete', json={}).json()['status'] == 'completed'
             assert client.post(f'/api/tasks/{prerequisite}/cancel', json={}).status_code == 409

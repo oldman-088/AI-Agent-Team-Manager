@@ -1,9 +1,9 @@
 {
-  "last_updated_utc": "2026-11-13T18:39:18+00:00",
+  "last_updated_utc": "2026-11-13T18:45:52+00:00",
   "overall_completion_percentage": null,
   "completion_note": "Total project effort completion unknown. The acceptance-criteria indicator is conservative and equally weighted; it is not an estimate of effort or delivery date.",
   "current_phase": "Phases 0–4 and partial Phase 10 in progress",
-  "current_task": "Design authenticated audit and safe agent execution",
+  "current_task": "Verify manual assigned task worker and migration in CI",
   "completed_tasks": [
     "Inspected repository, branches, permissions and local tools",
     "Researched candidate repositories and documented preliminary findings",
@@ -45,11 +45,12 @@
     "Enabled unassignment of terminal tasks without deleting records",
     "Added read-only ready-task snapshot and localized dashboard panel",
     "Added opt-in local provider connectivity probe using mocked tests only",
-    "Added explicit opt-in local one-shot provider text CLI with mocked tests"
+    "Added explicit opt-in local one-shot provider text CLI with mocked tests",
+    "Added manual assigned-task text execution with durable run metadata, mocked tests and run history UI"
   ],
   "in_progress_tasks": [
-    "Design authenticated audit and safe agent execution",
-    "Expand provider and platform validation without live credentials"
+    "Verify manual task execution and concurrent claim on PostgreSQL and browser",
+    "Design authenticated lifecycle and automatic scheduling"
   ],
   "pending_tasks": [
     "Full project and agent management",
@@ -59,11 +60,25 @@
     "Browser end-to-end testing"
   ],
   "files_created": [
-    "backend/app/provider_text.py",
-    "backend/tests/test_provider_text.py"
+    "backend/alembic/versions/0009_task_runs.py",
+    "backend/app/api/task_runs.py",
+    "backend/app/services/task_runs.py",
+    "backend/app/task_worker.py",
+    "backend/tests/test_task_worker_cli.py",
+    "frontend/src/TaskRuns.tsx",
+    "frontend/src/TaskRuns.test.tsx"
   ],
   "files_modified": [
+    "backend/app/models.py",
+    "backend/app/main.py",
+    "backend/app/api/tasks.py",
+    "backend/app/api/agents.py",
+    "backend/tests/test_foundation.py",
     "backend/README.md",
+    "frontend/src/App.tsx",
+    "frontend/src/i18n/messages.ts",
+    "frontend/e2e/dashboard.spec.ts",
+    "frontend/README.md",
     "docs/TECHNICAL_DECISIONS.md",
     "progress/تقرير_التقدم.md",
     "progress/WORKFLOW_REPORT.md",
@@ -75,33 +90,35 @@
   "tests_executed": [
     {
       "command": "cd backend && pytest -q",
-      "result": "20 passed locally on SQLite including mock provider CLI tests; Starlette deprecation warning; no live API call"
+      "result": "21 passed on SQLite including mocked worker, race, uncertainty, resolution and migration guard; Starlette deprecation warning"
     },
     {
-      "command": "gh pr checks 4 at 55c0760",
-      "result": "All checks passed, including previously pending separate CodeQL check"
+      "command": "cd frontend && npm run typecheck && npm test && npm run build",
+      "result": "17 tests and build passed"
     },
     {
-      "command": "gh pr checks 4 --watch at cbd674e",
-      "result": "All passed: PostgreSQL backend/mock provider tests, Chromium, frontend, prototype matrix and CodeQL; no live API request"
+      "command": "cd frontend && npm audit --audit-level=high",
+      "result": "0 vulnerabilities"
     }
   ],
-  "build_status": "All PR checks passed at cbd674e; later commits require their own checks.",
+  "build_status": "PostgreSQL migration/claim race and browser/CodeQL CI pending",
   "errors_encountered": [
-    "Starlette httpx deprecation warning persists"
+    "Initial SQLite test exposed partial multi-revision downgrade when later guard raised; test now restores head and documentation warns about SQLite DDL behavior.",
+    "Starlette httpx deprecation warning persists."
   ],
   "fixes_implemented": [
-    "Added independent transfer and billing acknowledgements, bounded stdin and output, terminal control filtering and sanitized provider failures"
+    "Added durable active-run uniqueness, explicit consent, uncertainty and operator resolution; no autonomous retries"
   ],
   "blockers": [
     "No project license selected",
-    "Provider access remains mocked; real network, billing and retention unverified",
-    "No authenticated, immutable or complete security audit; no agent execution or production security"
+    "No live provider credentials or real network call verified",
+    "No authenticated API, process isolation, autonomous lifecycle or scheduler",
+    "Run history deletion/retention management not implemented"
   ],
   "next_actions": [
-    "Design authenticated audit and safe agent execution",
-    "Verify provider only with authorized live credentials and billing consent",
-    "Return later to planning improvements"
+    "Verify PostgreSQL and browser CI",
+    "Implement secure authenticated lifecycle and safe scheduling",
+    "Investigate authorized live provider verification without exposing keys"
   ],
   "estimated_remaining_work": "26 of 30 full acceptance criteria remain unverified; duration unknown.",
   "acceptance_criteria_completion_percentage": 13.3,

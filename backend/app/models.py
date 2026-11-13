@@ -76,3 +76,23 @@ class TaskAssignment(Base):
     task_id: Mapped[int] = mapped_column(primary_key=True)
     project_id: Mapped[int] = mapped_column(nullable=False)
     agent_id: Mapped[int] = mapped_column(nullable=False)
+
+
+class TaskRun(Base):
+    """One manually requested text generation, not proof of task completion."""
+    __tablename__ = 'task_runs'
+    __table_args__ = (
+        CheckConstraint("status IN ('running', 'succeeded', 'uncertain', 'resolved')", name='ck_task_runs_status'),
+        Index('uq_task_runs_active_task', 'task_id', unique=True,
+              sqlite_where=text("status IN ('running', 'uncertain')"),
+              postgresql_where=text("status IN ('running', 'uncertain')")),
+    )
+    id: Mapped[int] = mapped_column(primary_key=True)
+    task_id: Mapped[int] = mapped_column(ForeignKey('tasks.id', ondelete='RESTRICT'), nullable=False)
+    agent_id: Mapped[int] = mapped_column(ForeignKey('agents.id', ondelete='RESTRICT'), nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False)
+    model: Mapped[str] = mapped_column(String(200), nullable=False)
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    input_tokens: Mapped[int | None] = mapped_column(nullable=True)
+    output_tokens: Mapped[int | None] = mapped_column(nullable=True)

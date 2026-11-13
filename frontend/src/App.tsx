@@ -1,3 +1,4 @@
+import { TaskRuns } from './TaskRuns';
 import { TaskAssignment } from './TaskAssignment';
 import { TaskDetails } from './TaskDetails';
 import { useEffect, useState, type FormEvent } from 'react';
@@ -116,7 +117,7 @@ export function App() {
       {tasks.length ? <ul>{tasks.map(task => <li key={task.id}><strong><bdi>{task.title}</bdi></strong> · {statusLabel(locale, task.status)} · <bdi>{projects.find(project => project.id === task.project_id)?.name ?? `#${task.project_id}`}</bdi>{task.status === 'pending' && <button className="task-action" disabled={completingId !== null} onClick={() => void finishTask(task.id)}>{t.manualComplete}</button>}</li>)}</ul> : <p>{t.noTasks}</p>}
       <h3>{t.details}</h3>
       <label>{t.selectTask}<select value={selectedTask} onChange={e => setSelectedTask(e.target.value)}><option value="">{t.chooseTask}</option>{tasks.map(task => <option key={task.id} value={task.id}>{task.title} (#{task.id})</option>)}</select></label>
-      {tasks.find(task => String(task.id) === selectedTask) && <><TaskAssignment key={`assignment-${selectedTask}`} task={tasks.find(task => String(task.id) === selectedTask)!} agents={agents} locale={locale} onChanged={refresh} /><TaskDetails key={selectedTask} task={tasks.find(task => String(task.id) === selectedTask)!} tasks={tasks} locale={locale} onChanged={refresh} /></>}
+      {tasks.find(task => String(task.id) === selectedTask) && <><TaskAssignment key={`assignment-${selectedTask}`} task={tasks.find(task => String(task.id) === selectedTask)!} agents={agents} locale={locale} onChanged={refresh} /><TaskDetails key={selectedTask} task={tasks.find(task => String(task.id) === selectedTask)!} tasks={tasks} locale={locale} onChanged={refresh} /><TaskRuns key={`runs-${selectedTask}`} taskId={Number(selectedTask)} locale={locale} refreshVersion={tasks} /></>}
     </section>
     <section aria-labelledby="ready-tasks-heading"><h2 id="ready-tasks-heading">{t.readyTasks}</h2><p>{t.readyTasksHelp}</p>
       {readyTasks.length ? <ul>{readyTasks.map(task => <li key={task.id}><bdi>{task.title}</bdi> · <bdi>#{task.id}</bdi> · <bdi>{projects.find(project => project.id === task.project_id)?.name ?? `#${task.project_id}`}</bdi></li>)}</ul> : <p>{t.noReadyTasks}</p>}

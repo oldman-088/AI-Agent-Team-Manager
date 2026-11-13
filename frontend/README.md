@@ -23,3 +23,5 @@ Select a loaded task to inspect its dependency IDs and readiness snapshot, and a
 A selected pending task can be manually assigned to an agent configuration from the same project. The first 100 loaded agents are available; an existing assignment outside that page is identified by ID. Assignment is planning only and starts nothing. Assignments can be removed from completed or cancelled tasks without deleting the task; adding or changing an agent still requires a pending task. Refresh and reselect the task to observe changes made elsewhere.
 
 The ready planning tasks panel lists up to the first 100 pending tasks with completed direct prerequisites. It is a snapshot only; refresh to update it. A ready task is not claimed or automatically executed, and the server still validates manual completion.
+
+The selected task's text-run history shows database metadata from the manual local CLI, not a process lifecycle or proof of task completion. Refresh to see external changes; only the first 100 newest runs are shown. The dashboard cannot start workers, configure models or display returned text.

@@ -1,3 +1,3 @@
 # Current task
 
-Design authenticated audit and safe agent execution; expand provider validation without live credentials. Return to planning improvements later. All PR checks passed at `cbd674e`.
+Verify the manual assigned-task worker, migration and competing claims on PostgreSQL and browser CI; then build authenticated agent lifecycle and safe scheduling.

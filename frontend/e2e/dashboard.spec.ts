@@ -20,7 +20,7 @@ test('create records and switch language with RTL and keyboard access', async ({
   await agentSection.getByLabel('Project').selectOption({label: 'مشروع AATM'});
   await page.getByRole('button', { name: 'Create configuration' }).click();
   await expect(agentSection.locator('li')).toContainText('QA Agent');
-  await expect(agentSection.locator('li')).toContainText('Execution not implemented');
+  await expect(agentSection.locator('li')).toContainText('Agent process lifecycle not implemented');
 
   const taskSection = page.getByRole('region', { name: 'Planning tasks', exact: true });
   await taskSection.getByLabel('Project').selectOption({label: 'مشروع AATM'});
@@ -77,6 +77,7 @@ test('manage task dependencies and inspect readiness', async ({page}) => {
   const consumer = await page.getByLabel('Select task').locator('option').filter({hasText: 'Consumer'}).getAttribute('value');
   await page.getByLabel('Select task').selectOption(consumer!);
   await expect(page.getByText('Ready for manual completion', {exact: true})).toBeVisible();
+  await expect(page.getByText('No runs loaded.')).toBeVisible();
   const assignment = page.getByRole('combobox', {name: 'Assigned agent configuration'});
   await assignment.selectOption({index: 1});
   await page.getByRole('button', {name: 'Save assignment'}).click();

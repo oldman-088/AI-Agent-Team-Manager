@@ -1,6 +1,7 @@
 # Blockers and limitations
 
 - No project license selected.
-- Provider calls have only mock tests; no live credentials, billing, retention or network validation.
-- No authenticated identity, immutable or comprehensive security audit, automatic scheduling, provider integration with tasks or agent execution.
+- Provider calls tested only with mocks; no live network, billing or retention validation.
+- No authenticated API, execution isolation, autonomous lifecycle, scheduler or comprehensive security audit.
+- Task run history restricts deletion; no retention management. Uncertain runs require manual investigation and resolution.
 - Full RTL, accessibility, Windows and Python dependency validation remain outstanding.

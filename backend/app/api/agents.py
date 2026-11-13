@@ -74,5 +74,5 @@ def delete_agent(agent_id: AgentId, db: Db) -> Response:
         db.commit()
     except IntegrityError:
         db.rollback()
-        raise HTTPException(status_code=409, detail='Agent has task assignments; remove them before deleting') from None
+        raise HTTPException(status_code=409, detail='Agent has task assignments or run history; resolve references before deleting') from None
     return Response(status_code=204)
