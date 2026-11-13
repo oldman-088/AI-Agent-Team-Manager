@@ -20,5 +20,15 @@ jobs:
         working-directory: frontend
       - run: npx playwright install --with-deps chromium
         working-directory: frontend
-      - run: npm run test:e2e
+      - name: Run browser tests
         working-directory: frontend
+        shell: bash
+        run: |
+          set +e
+          npm run test:e2e > e2e.log 2>&1
+          status=$?
+          cat e2e.log
+          if [ "$status" -ne 0 ]; then
+            python -c "from pathlib import Path; t=Path('e2e.log').read_text(errors='replace')[-7000:]; print('::error title=Browser test output::'+t.replace('%','%25').replace('\r','%0D').replace('\n','%0A'))"
+          fi
+          exit "$status"
