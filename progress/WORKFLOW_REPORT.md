@@ -1,6 +1,6 @@
 # Workflow report
 
-Last updated: 2026-11-13T19:35:09+00:00
+Last updated: 2026-11-13T19:36:33+00:00
 
 ## Completion indicator
 
@@ -74,4 +74,4 @@ Added a conditional-update guard blocking ordinary manual resolution of running 
 
 ## Batch preview checkpoint
 
-Added read-only scheduler `--dry-run` to display a bounded candidate snapshot without a provider key, claims or calls. It does not check every claim restriction or reserve work. SQLite 27 backend tests pass, including a forbidden provider factory assertion. PostgreSQL and full CI pending. Acceptance remains 4/30.
+Added read-only scheduler `--dry-run` to display a bounded candidate snapshot without a provider key, claims or calls. It does not check every claim restriction or reserve work. SQLite 27 backend tests pass, including a forbidden provider factory assertion. All PR checks passed at `91b14e4`, including [PostgreSQL](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43493619767), [Chromium](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43493619619) and [CodeQL](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43493619611). Later commits require separate verification. Acceptance remains 4/30.

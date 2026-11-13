@@ -1,9 +1,9 @@
 {
-  "last_updated_utc": "2026-11-13T19:35:09+00:00",
+  "last_updated_utc": "2026-11-13T19:36:33+00:00",
   "overall_completion_percentage": null,
   "completion_note": "Total project effort completion unknown. The acceptance-criteria indicator is conservative and equally weighted; it is not an estimate of effort or delivery date.",
   "current_phase": "Phases 0–4 and partial Phase 10 in progress",
-  "current_task": "Verify scheduler dry-run preview in PostgreSQL CI",
+  "current_task": "Design worker isolation and safe remote recovery",
   "completed_tasks": [
     "Inspected repository, branches, permissions and local tools",
     "Researched candidate repositories and documented preliminary findings",
@@ -56,8 +56,8 @@
     "Added non-billable scheduler candidate preview"
   ],
   "in_progress_tasks": [
-    "Verify scheduler dry-run preview in GitHub CI",
-    "Design worker isolation and safe recovery"
+    "Implement worker isolation and safe recovery",
+    "Design per-user authorization and budget controls"
   ],
   "pending_tasks": [
     "Full project and agent management",
@@ -86,9 +86,13 @@
     {
       "command": "gh pr checks 4 --watch at dbe17f8",
       "result": "All checks passed including PostgreSQL heartbeat resolution race, Chromium and CodeQL"
+    },
+    {
+      "command": "gh pr checks 4 --watch at 91b14e4",
+      "result": "All passed including PostgreSQL dry-run, authenticated Chromium, frontend, Windows/Ubuntu prototype matrix and CodeQL; no live provider calls"
     }
   ],
-  "build_status": "Scheduler preview CI pending",
+  "build_status": "All PR checks passed at 91b14e4; later commits require separate verification.",
   "errors_encountered": [
     "Starlette httpx deprecation warning persists."
   ],
