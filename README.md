@@ -36,4 +36,4 @@ No agent execution, LLM integration, workflow engine, integrations, authenticati
 
 ## Project direction
 
-The supplied AATM master specification defines the intended platform; this prototype implements only a small local task tracker, not that platform. See [architecture](docs/ARCHITECTURE.md), [research](docs/RESEARCH.md), [decisions](docs/TECHNICAL_DECISIONS.md), and [roadmap](docs/ROADMAP.md). CI currently validates the prototype only; the planned React frontend, PostgreSQL and integrations do not yet exist.
+The supplied AATM master specification defines the intended platform; this prototype implements only a small local task tracker, not that platform. See [architecture](docs/ARCHITECTURE.md), [research](docs/RESEARCH.md), [decisions](docs/TECHNICAL_DECISIONS.md), and [roadmap](docs/ROADMAP.md). The new Phase 1 foundations are separate from the prototype: see [backend](backend/README.md) and [frontend](frontend/README.md). PostgreSQL migrations require a configured database; provider and agent integrations do not yet exist.

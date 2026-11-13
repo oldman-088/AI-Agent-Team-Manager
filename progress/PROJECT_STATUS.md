@@ -1,3 +1,3 @@
 # Project status
 
-Phase 0 is in progress. The existing prototype is a local task tracker, not an agent execution platform. Overall completion is unknown. See `WORKFLOW_REPORT.md` and `docs/ROADMAP.md` for evidence, tests, and remaining work. These files are development reports; future operational state belongs in the database.
+Phases 0 and 1 are in progress. The existing tracker remains separate from the new backend/frontend foundation. Overall completion is unknown. See `WORKFLOW_REPORT.md` and `docs/ROADMAP.md`. These development reports are not operational database state.

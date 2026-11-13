@@ -1,37 +1,23 @@
 # Workflow report
 
-Last updated: 2026-11-13T16:37:40+00:00
+Last updated: 2026-11-13T16:43:45+00:00
 
-Overall completion: **unknown**; the full specification has not been decomposed into weighted, verifiable work. Phase: **0 — In Progress**. Current task: validate CI and refine research.
+Overall completion: **unknown**; the complete specification is not yet decomposed into weighted, verifiable work. Phases 0 and 1 are **in progress**.
 
-## Completed
+## Completed this checkpoint
 
-- Inspected repository, branches, tools and GitHub permissions.
-- Documented preliminary candidate research, architecture, security boundaries and roadmap.
-- Added prototype validation and CodeQL workflows, contribution guidance and documentation inventory check.
-- Created Phase 0 and 1 milestones and issues #1–#3.
+- Added separate FastAPI health/readiness endpoints, SQLAlchemy configuration and an initial Alembic project table migration.
+- Added a React/TypeScript/Vite readiness dashboard and test, plus PostgreSQL and frontend CI jobs.
+- Replaced dynamic SQL in the legacy prototype with fixed statements after four high CodeQL alerts. CodeQL re-validation is pending.
+- Upgraded Vitest after npm audit identified vulnerable test dependencies; repeat audit found zero vulnerabilities.
 
-## In progress / pending
+## Verification
 
-- Check GitHub Actions and PR checks; complete package-level license and security reviews.
-- Phase 1 and all subsequent platform capabilities remain unimplemented; prototype is not production-ready.
+- Legacy Python tests: 2 passed. New backend: 3 passed using SQLite smoke migration; no local PostgreSQL server was available.
+- Frontend: typecheck passed, 2 unit tests passed, production build passed. `npm audit --audit-level=high`: zero vulnerabilities.
+- Documentation inventory and `git diff --check` passed. Starlette emitted an httpx deprecation warning.
+- New GitHub Actions runs, including PostgreSQL integration and CodeQL, are pending. Earlier prototype matrix passed on Windows and Ubuntu.
 
-## Files
+## Status, limitations and next actions
 
-See `WORKFLOW_REPORT.json` for the file inventory.
-
-## Tests and build
-
-- Python unit/API tests: 2 passed on Linux, Python 3.11.2.
-- Python compileall: passed. Documentation inventory: 10 files present. `git diff --check`: passed before report update.
-- Initial Windows jobs failed; after explicit SQLite connection cleanup, [run 43464794399](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43464794399) passed Ubuntu and Windows with Python 3.11 and 3.12 at commit `add589d`. Exact original failure cause remains unconfirmed because logs could not be downloaded. [CodeQL run 43464647643](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43464647643) passed at `ff029a1`. Newer commits require their own checks. React build: not implemented.
-
-## Errors, fixes and blockers
-
-- Direct raw GitHub README URLs were inaccessible; used GitHub API instead.
-- The initial Windows CI tests failed; logs were inaccessible. SQLite connections were explicitly closed as a likely fix; the subsequent matrix passed. CI also warned about Node 20 action deprecation.
-- Project license not selected; Docker and psql unavailable here; Windows not validated.
-
-## Next actions and remaining work
-
-Push and inspect CI, complete dependency and license research, and implement Phase 1. Most of the specified platform remains; a reliable duration estimate is not available.
+The new backend and frontend are foundations, not the requested completed product. They do not execute agents, manage projects, authenticate users, or migrate legacy data. PostgreSQL integration and browser E2E are unverified. Python dependencies are not locked and project license is undecided. Check CI and address failures; then complete security and dependency reviews and develop real project/agent management. Most of phases 1–11 remain; duration is unknown. File inventory and detailed results are in `WORKFLOW_REPORT.json`.

@@ -43,6 +43,8 @@ class ApplicationTests(unittest.TestCase):
         self.assertEqual(status, 201)
         status, updated = self.request('PATCH', f"/api/tasks/{task['id']}", {'status': 'done'})
         self.assertEqual((status, updated['status']), (200, 'done'))
+        status, updated = self.request('PATCH', f"/api/tasks/{task['id']}", {'status': 'in_progress', 'agent_id': None})
+        self.assertEqual((status, updated['status'], updated['agent_id']), (200, 'in_progress', None))
         initialize(self.db)  # reopening the database does not reset data
         self.assertEqual(len(self.request('GET', '/api/tasks')[1]), 1)
         self.assertEqual(self.request('DELETE', f"/api/agents/{agent['id']}", {})[0], 200)
@@ -56,6 +58,7 @@ class ApplicationTests(unittest.TestCase):
         self.assertEqual(self.request('POST', '/api/tasks', {'title': 'x'}, {'Origin': 'https://evil.example'})[0], 400)
         self.assertEqual(self.request('PATCH', '/api/tasks/1', {'status': 'bad'})[0], 400)
         self.assertEqual(self.request('PATCH', '/api/tasks/1', {'title': 'bad'})[0], 400)
+        self.assertEqual(self.request('PATCH', '/api/tasks/1', {'status = ?; DROP TABLE tasks;--': 'x'})[0], 400)
         self.assertEqual(self.request('DELETE', '/api/tasks/99', {})[0], 404)
         self.assertEqual(self.request('GET', '/../../README.md')[0], 404)
         self.assertEqual(self.request('GET', '/')[0], 200)

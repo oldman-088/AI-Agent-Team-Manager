@@ -3,7 +3,7 @@
 The master specification supplied by the user is the authoritative requirements source. Overall completion is unknown; no weighted estimate is credible until the full scope is decomposed into verifiable tasks.
 
 - Phase 0 — **In Progress**: research, architectural baseline, CI, issue/milestone planning. CI must actually run before verification. Research is preliminary, not a full security or license audit.
-- Phase 1 — **Not Started**: FastAPI, React/TypeScript, PostgreSQL, configuration, health and Alembic. Acceptance: documented startup, migrations and automated integration tests against PostgreSQL.
+- Phase 1 — **In Progress**: FastAPI, React/TypeScript, PostgreSQL, configuration, health and Alembic. Foundation implemented; PostgreSQL CI validation and further work pending. Acceptance: documented startup, migrations and automated integration tests against PostgreSQL.
 - Phase 2 — **Not Started**: registry, lifecycle and heartbeat. Acceptance: states reflect real processes; stale-heartbeat recovery tests.
 - Phase 3 — **Not Started**: provider interfaces and at least one real provider; credentials protected, real integration tested separately.
 - Phase 4 — **Not Started**: durable coordination, dependencies and safe execution.

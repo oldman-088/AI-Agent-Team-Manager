@@ -1,0 +1,47 @@
+"""Application factory: liveness is independent from database readiness."""
+from collections.abc import Callable
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI
+from fastapi.responses import JSONResponse
+from sqlalchemy.engine import Engine
+from sqlalchemy.exc import SQLAlchemyError
+
+from app.config import Settings
+from app.database import check_database, make_engine
+
+
+def create_app(settings: Settings | None = None, engine_factory: Callable[[str], Engine] = make_engine) -> FastAPI:
+    settings = settings or Settings.from_environment()
+
+    @asynccontextmanager
+    async def lifespan(application: FastAPI):
+        application.state.engine = engine_factory(settings.database_url) if settings.database_url else None
+        try:
+            yield
+        finally:
+            if application.state.engine is not None:
+                application.state.engine.dispose()
+
+    application = FastAPI(title="AATM API", version="0.1.0", lifespan=lifespan)
+
+    @application.get("/health/live")
+    def live() -> dict[str, str]:
+        return {"status": "ok"}
+
+    @application.get("/health/ready")
+    def ready() -> JSONResponse:
+        engine = application.state.engine
+        if engine is None:
+            return JSONResponse({"status": "not_ready", "database": "not_configured"}, status_code=503)
+        try:
+            check_database(engine)
+        except SQLAlchemyError:
+            # Do not expose connection strings, credentials or database details.
+            return JSONResponse({"status": "not_ready", "database": "unavailable"}, status_code=503)
+        return JSONResponse({"status": "ok", "database": "reachable"})
+
+    return application
+
+
+app = create_app()

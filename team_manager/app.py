@@ -86,7 +86,7 @@ def handler_for(db_path):
             if path in ('/api/agents', '/api/tasks'):
                 table = path.rsplit('/', 1)[1]
                 with connect(db_path) as db:
-                    rows = db.execute(f'SELECT * FROM {table} ORDER BY id DESC').fetchall()
+                    rows = db.execute('SELECT * FROM agents ORDER BY id DESC' if table == 'agents' else 'SELECT * FROM tasks ORDER BY id DESC').fetchall()
                 return self.send_json(200, [dict(row) for row in rows])
             files = {'/': ('index.html', 'text/html; charset=utf-8'), '/app.js': ('app.js', 'text/javascript; charset=utf-8'), '/style.css': ('style.css', 'text/css; charset=utf-8')}
             if path not in files:
@@ -127,14 +127,14 @@ def handler_for(db_path):
                             if agent_id is not None and (type(agent_id) is not int or agent_id <= 0):
                                 raise ValueError('agent_id must be a positive integer or null')
                             cursor = db.execute('INSERT INTO tasks(title, description, agent_id) VALUES (?, ?, ?)', (text(data.get('title'), 'title', 200), text(data.get('description', ''), 'description', 4000, False), agent_id))
-                        row = db.execute(f'SELECT * FROM {table} WHERE id = ?', (cursor.lastrowid,)).fetchone()
+                        row = db.execute('SELECT * FROM agents WHERE id = ?' if table == 'agents' else 'SELECT * FROM tasks WHERE id = ?', (cursor.lastrowid,)).fetchone()
                     return self.send_json(201, dict(row))
                 if len(parts) != 3 or not parts[2].isdigit() or int(parts[2]) < 1:
                     return self.send_json(404, {'error': 'Not found'})
                 item_id = int(parts[2])
                 with connect(db_path) as db:
                     if method == 'DELETE':
-                        cursor = db.execute(f'DELETE FROM {table} WHERE id = ?', (item_id,))
+                        cursor = db.execute('DELETE FROM agents WHERE id = ?' if table == 'agents' else 'DELETE FROM tasks WHERE id = ?', (item_id,))
                     elif method == 'PATCH' and table == 'tasks':
                         data = self.body()
                         if not data or set(data) - {'status', 'agent_id'}:
@@ -143,13 +143,17 @@ def handler_for(db_path):
                             raise ValueError('Invalid status')
                         if 'agent_id' in data and data['agent_id'] is not None and (type(data['agent_id']) is not int or data['agent_id'] <= 0):
                             raise ValueError('agent_id must be a positive integer or null')
-                        columns = ', '.join(f'{key} = ?' for key in data)
-                        cursor = db.execute(f'UPDATE tasks SET {columns} WHERE id = ?', (*data.values(), item_id))
+                        if 'status' in data and 'agent_id' in data:
+                            cursor = db.execute('UPDATE tasks SET status = ?, agent_id = ? WHERE id = ?', (data['status'], data['agent_id'], item_id))
+                        elif 'status' in data:
+                            cursor = db.execute('UPDATE tasks SET status = ? WHERE id = ?', (data['status'], item_id))
+                        else:
+                            cursor = db.execute('UPDATE tasks SET agent_id = ? WHERE id = ?', (data['agent_id'], item_id))
                     else:
                         return self.send_json(404, {'error': 'Not found'})
                     if not cursor.rowcount:
                         return self.send_json(404, {'error': 'Not found'})
-                    row = db.execute(f'SELECT * FROM {table} WHERE id = ?', (item_id,)).fetchone() if method == 'PATCH' else None
+                    row = db.execute('SELECT * FROM tasks WHERE id = ?', (item_id,)).fetchone() if method == 'PATCH' else None
                 return self.send_json(200, dict(row) if row else {'deleted': True})
             except (ValueError, sqlite3.IntegrityError) as exc:
                 self.send_json(400, {'error': 'Invalid agent reference' if isinstance(exc, sqlite3.IntegrityError) else str(exc)})

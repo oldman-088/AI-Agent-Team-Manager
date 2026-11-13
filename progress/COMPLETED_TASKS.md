@@ -1,3 +1,3 @@
 # Completed tasks
 
-Repository inspection; initial research snapshot and target architecture; prototype CI workflow; Phase 0/1 milestones and initial GitHub issues. See `WORKFLOW_REPORT.md` for verification.
+Repository inspection, preliminary research and architecture, prototype CI, milestones/issues, initial backend health and migration foundation, frontend readiness dashboard, local unit tests and build. See `WORKFLOW_REPORT.md` for verification and remaining gaps.

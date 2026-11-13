@@ -1,0 +1,5 @@
+# Backend foundation
+
+Python 3.11+. From this directory create a virtual environment, then `pip install -e ".[test]"`. Set `AATM_DATABASE_URL` to a dedicated PostgreSQL database URL using SQLAlchemy's `postgresql+psycopg://` scheme. Use a local secret store or environment variables for credentials; never commit the URL if it contains credentials. Run `alembic upgrade head`, then `uvicorn app.main:app --host 127.0.0.1 --port 8001`. See `/docs`, `/health/live` and `/health/ready`. Readiness checks connectivity, not migration version. Missing configuration or an unreachable database returns 503 without exposing details.
+
+Test with `pytest`; to exercise PostgreSQL migration upgrade/downgrade set `AATM_TEST_DATABASE_URL` to an **empty disposable database**. The test drops its `projects` table; never point it at valuable data. Without that variable SQLite is only a local smoke test. The initial schema and health probes do not implement project management or migrate the old SQLite prototype. No authentication is implemented: use loopback only and do not expose this service publicly.
