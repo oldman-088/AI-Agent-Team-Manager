@@ -1,6 +1,6 @@
 # Workflow report
 
-Last updated: 2026-11-13T17:50:00+00:00
+Last updated: 2026-11-13T17:51:44+00:00
 
 ## Completion indicator
 
@@ -14,8 +14,8 @@ Added a metadata-only task activity history, persisted in the same transaction a
 
 - Backend: 11 tests passed on SQLite, including rollback on event failure, idempotence, detach behavior and downgrade protection. First test run exposed the intended downgrade guard; updated the disposable test to check it before explicitly clearing test data. Starlette httpx deprecation warning remains.
 - Frontend: typecheck, 13 tests and build passed; npm audit found zero vulnerabilities. Initial typecheck failed on a missing import; fixed and reran.
-- Documentation inventory and diff check passed before report update. PostgreSQL/browser/CodeQL CI for current work pending. Prior checks passed at `cee9884`.
+- Documentation inventory and diff check passed before report update. All PR checks passed at `875d083`: [PostgreSQL activity tests](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43476706411), [Chromium activity E2E](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43476706466), [frontend](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43476706255), [prototype matrix](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43476706340), and [CodeQL](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43476706294). Later commits need their own checks.
 
 ## Limitations and next actions
 
-Project license remains unselected. PostgreSQL is unavailable locally. Verify CI, then design authenticated and tamper-resistant auditing and safe execution. Agent execution, automatic scheduling, authentication, comprehensive audit and most platform capabilities are incomplete. See JSON report for file inventory; duration unknown.
+Project license remains unselected. PostgreSQL is unavailable locally; the activity tests passed in CI. Design authenticated and tamper-resistant auditing and safe execution. Agent execution, automatic scheduling, authentication, comprehensive audit and most platform capabilities are incomplete. See JSON report for file inventory; duration unknown.
