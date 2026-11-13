@@ -1,6 +1,6 @@
 # Workflow report
 
-Last updated: 2026-11-13T19:05:02+00:00
+Last updated: 2026-11-13T19:06:12+00:00
 
 ## Completion indicator
 
@@ -62,4 +62,4 @@ Added a shared lock for application worker claims, enforcing at most 20 unresolv
 
 ## Optional local API access gate checkpoint
 
-Researched fastapi-users, Authlib and Starlette; added an optional local shared bearer gate, plus in-memory-only frontend token input. Default remains unauthenticated; an explicitly invalid or empty token fails startup. Health and schema remain public, and direct DB workers bypass this HTTP gate. This is not per-user identity, RBAC, rate limiting, TLS or production security. Backend 26 tests and frontend 18 tests/typecheck/build passed locally; npm audit zero. Dedicated browser tests use an isolated database and test-only token. Authenticated browser and PostgreSQL/CodeQL CI pending. Acceptance remains 4/30.
+Researched fastapi-users, Authlib and Starlette; added an optional local shared bearer gate, plus in-memory-only frontend token input. Default remains unauthenticated; an explicitly invalid or empty token fails startup. Health and schema remain public, and direct DB workers bypass this HTTP gate. This is not per-user identity, RBAC, rate limiting, TLS or production security. Backend 26 tests and frontend 18 tests/typecheck/build passed locally; npm audit zero. Dedicated browser tests use an isolated database and test-only token. All PR checks passed at `545e009`, including [authenticated Chromium](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43488806681), [PostgreSQL](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43488806533) and [CodeQL](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43488806393). Later commits require separate verification. Acceptance remains 4/30.

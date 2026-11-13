@@ -1,3 +1,3 @@
 # Current task
 
-Verify optional local bearer gate on PostgreSQL and browser CI; then implement per-user authorization, worker isolation and safe recovery.
+Implement safe worker recovery and isolation; design per-user authorization and budget controls. Optional local bearer gate passed CI at `545e009`.
