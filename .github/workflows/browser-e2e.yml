@@ -29,6 +29,6 @@ jobs:
           status=$?
           cat e2e.log
           if [ "$status" -ne 0 ]; then
-            python -c "from pathlib import Path; t=Path('e2e.log').read_text(errors='replace')[-7000:]; print('::error title=Browser test output::'+t.replace('%','%25').replace('\r','%0D').replace('\n','%0A'))"
+            python -c "from pathlib import Path; t=(Path('e2e.log').read_text(errors='replace') + '\n' + '\n'.join(p.read_text(errors='replace') for p in Path('test-results').rglob('error-context.md')))[-14000:]; print('::error title=Browser test output::'+t.replace('%','%25').replace('\r','%0D').replace('\n','%0A'))"
           fi
           exit "$status"
