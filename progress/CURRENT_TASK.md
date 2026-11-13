@@ -1,3 +1,3 @@
 # Current task
 
-Verify isolated Playwright browser E2E in GitHub Actions and address any failures; continue secure execution and credential design.
+Expand browser RTL/accessibility validation and continue secure credential and execution design. All PR checks passed at `81c1a40`.
