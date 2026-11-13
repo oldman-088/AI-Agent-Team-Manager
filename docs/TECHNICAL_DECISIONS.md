@@ -16,3 +16,7 @@ A small Phase 4 planning-task slice is implemented in parallel with unfinished P
 ## 2026-11-13: Narrow provider interface
 
 Adopt the official OpenAI Python SDK behind a small asynchronous text-completion protocol. Provider credentials are passed explicitly by the caller and are not stored; output token count is bounded, SDK retries disabled and upstream error details suppressed. `store=false` is requested but does not establish a complete retention guarantee. This is a library-level integration only, not an exposed API, credential manager, agent execution system or live-tested provider. Streaming, tools, model discovery and costs remain future work. Other provider SDKs remain candidates.
+
+## 2026-11-13: Task dependencies as planning data
+
+Implement same-project dependency edges with database-enforced membership and an explicit 10,000-edge per-project limit. Serialize graph changes per project via PostgreSQL row locks; SQLite uses a database-level immediate write transaction. Reject cyclic and self dependencies and refuse deletion of referenced tasks. API graph edits are serialized, but arbitrary direct SQL can bypass the cycle check. No automatic scheduling, ready-state derivation or execution is implied. Tests cover opposing concurrent edits; PostgreSQL CI verification is required separately.

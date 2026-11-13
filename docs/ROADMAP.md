@@ -6,7 +6,7 @@ The master specification supplied by the user is the authoritative requirements 
 - Phase 1 — **In Progress**: FastAPI, React/TypeScript, PostgreSQL, configuration, health and Alembic. Foundation implemented; PostgreSQL CI validation and further work pending. Acceptance: documented startup, migrations and automated integration tests against PostgreSQL.
 - Phase 2 — **In Progress**: initial configuration registry implemented; lifecycle and heartbeat not implemented. Acceptance: states reflect real processes; stale-heartbeat recovery tests.
 - Phase 3 — **In Progress**: narrow OpenAI SDK text adapter implemented with mocked tests; credential management, streaming and live integration verification remain outstanding.
-- Phase 4 — **In Progress**: project-scoped planning tasks only; durable coordination, dependencies and safe execution remain unimplemented.
+- Phase 4 — **In Progress**: project-scoped planning tasks and dependency graph API; dependency-based scheduling, durable coordination and safe execution remain unimplemented.
 - Phase 5 — **Not Started**: isolated Playwright sessions and persistent profiles.
 - Phase 6 — **Not Started**: projects and authorized GitHub integration.
 - Phase 7 — **Not Started**: scoped shared memory.

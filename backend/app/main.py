@@ -10,6 +10,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from app.api.projects import router as projects_router
 from app.api.agents import router as agents_router
 from app.api.tasks import router as tasks_router
+from app.api.dependencies import router as dependencies_router
 from app.security import LocalGuard
 from app.config import Settings
 from app.database import check_database, make_engine
@@ -32,6 +33,7 @@ def create_app(settings: Settings | None = None, engine_factory: Callable[[str],
     application.include_router(projects_router)
     application.include_router(agents_router)
     application.include_router(tasks_router)
+    application.include_router(dependencies_router)
 
     @application.get("/health/live")
     def live() -> dict[str, str]:

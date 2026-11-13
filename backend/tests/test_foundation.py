@@ -1,4 +1,6 @@
 import os
+from concurrent.futures import ThreadPoolExecutor
+from threading import Barrier
 from pathlib import Path
 
 import pytest
@@ -6,8 +8,10 @@ from alembic import command
 from alembic.config import Config
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, inspect, text
+from sqlalchemy.exc import IntegrityError
 
 from app.config import Settings
+from app.database import make_engine
 from app.main import create_app
 
 BACKEND = Path(__file__).resolve().parents[1]
@@ -93,6 +97,49 @@ def test_migration_and_readiness(tmp_path, monkeypatch):
             assert client.get(f'/api/tasks?project_id={project_id}').json()[0]['id'] == task_id
             assert client.get('/api/tasks?project_id=2147483647').json() == []
             assert client.get('/api/tasks?limit=101').status_code == 422
+            second = client.post('/api/tasks', json={'project_id': project_id, 'title': 'Second'}).json()['id']
+            third = client.post('/api/tasks', json={'project_id': project_id, 'title': 'Third'}).json()['id']
+            other_project = client.post('/api/projects', json={'name': 'Separate'}).json()['id']
+            other_task = client.post('/api/tasks', json={'project_id': other_project, 'title': 'Other'}).json()['id']
+            edge = f'/api/tasks/{task_id}/dependencies/{second}'
+            assert client.put(edge, json={}).status_code == 204
+            assert client.put(edge, json={}).status_code == 204
+            assert client.get(f'/api/tasks/{task_id}/dependencies').json() == [second]
+            assert client.put(f'/api/tasks/{second}/dependencies/{third}', json={}).status_code == 204
+            assert client.put(f'/api/tasks/{third}/dependencies/{task_id}', json={}).status_code == 409
+            assert client.put(f'/api/tasks/{task_id}/dependencies/{task_id}', json={}).status_code == 422
+            assert client.put(f'/api/tasks/{task_id}/dependencies/{other_task}', json={}).status_code == 422
+            # The database also prevents cross-project edges, independently of API checks.
+            strict_engine = make_engine(url)
+            try:
+                with pytest.raises(IntegrityError):
+                    with strict_engine.begin() as connection:
+                        connection.execute(text('INSERT INTO task_dependencies (task_id, depends_on_id, project_id) VALUES (:a, :b, :p)'), {'a': task_id, 'b': other_task, 'p': project_id})
+            finally:
+                strict_engine.dispose()
+            assert client.put(f'/api/tasks/{task_id}/dependencies/2147483647', json={}).status_code == 404
+            assert client.delete(f'/api/tasks/{second}').status_code == 409
+            assert client.delete(edge).status_code == 204
+            assert client.delete(edge).status_code == 404
+            assert client.delete(f'/api/tasks/{second}/dependencies/{third}').status_code == 204
+            # Simultaneous opposing edges must not both commit and create a cycle.
+            barrier = Barrier(2)
+            def add_edge(source, target):
+                barrier.wait(timeout=5)
+                with TestClient(create_app(Settings(url)), base_url='http://localhost') as parallel_client:
+                    return parallel_client.put(f'/api/tasks/{source}/dependencies/{target}', json={}).status_code
+            with ThreadPoolExecutor(max_workers=2) as pool:
+                first = pool.submit(add_edge, task_id, second)
+                reverse = pool.submit(add_edge, second, task_id)
+                outcomes = sorted([first.result(timeout=20), reverse.result(timeout=20)])
+            assert outcomes == [204, 409]
+            for source, target in [(task_id, second), (second, task_id)]:
+                if client.get(f'/api/tasks/{source}/dependencies').json():
+                    assert client.delete(f'/api/tasks/{source}/dependencies/{target}').status_code == 204
+            assert client.delete(f'/api/tasks/{second}').status_code == 204
+            assert client.delete(f'/api/tasks/{third}').status_code == 204
+            assert client.delete(f'/api/tasks/{other_task}').status_code == 204
+            assert client.delete(f'/api/projects/{other_project}').status_code == 204
             assert client.patch(f'/api/tasks/{task_id}', json={'title': 'Updated'}).json()['title'] == 'Updated'
             assert client.patch(f'/api/tasks/{task_id}', json={'status': 'running'}).status_code == 422
             assert client.post(f'/api/tasks/{task_id}/cancel', json={}).json()['status'] == 'cancelled'

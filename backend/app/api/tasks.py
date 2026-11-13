@@ -1,7 +1,8 @@
-"""Project planning tasks; no agent execution or task dependencies yet."""
+"""Project planning tasks; no agent execution or scheduling yet."""
 from typing import Annotated
 from fastapi import APIRouter, HTTPException, Path, Query, Response
 from sqlalchemy import select, update
+from sqlalchemy.exc import IntegrityError
 
 from app.api.projects import Db
 from app.models import Project, Task
@@ -70,5 +71,9 @@ def cancel_task(task_id: TaskId, db: Db) -> Task:
 def delete_task(task_id: TaskId, db: Db) -> Response:
     task = find_task(db, task_id)
     db.delete(task)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=409, detail='Task has dependencies; remove them before deleting') from None
     return Response(status_code=204)

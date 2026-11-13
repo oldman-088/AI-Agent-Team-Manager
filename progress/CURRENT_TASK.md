@@ -1,3 +1,3 @@
 # Current task
 
-Expand browser RTL/accessibility validation and continue secure credential and execution design. All PR checks passed at `81c1a40`.
+Verify task dependency migration, concurrency and security checks in CI; design dependency-aware scheduling and safe agent execution.
