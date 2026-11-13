@@ -1,9 +1,9 @@
 {
-  "last_updated_utc": "2026-11-13T20:20:55+00:00",
+  "last_updated_utc": "2026-11-13T20:22:29+00:00",
   "overall_completion_percentage": null,
   "completion_note": "Total project effort completion unknown. The acceptance-criteria indicator is conservative and equally weighted; it is not an estimate of effort or delivery date.",
   "current_phase": "Phases 0–4 and partial Phase 10 in progress",
-  "current_task": "Verify scheduler selection of available agents on PostgreSQL CI",
+  "current_task": "Implement safe worker isolation and recovery",
   "completed_tasks": [
     "Inspected repository, branches, permissions and local tools",
     "Researched candidate repositories and documented preliminary findings",
@@ -57,8 +57,8 @@
     "Improved scheduler selection to bypass agents with unresolved runs"
   ],
   "in_progress_tasks": [
-    "Verify scheduler selection skips busy agents on PostgreSQL",
-    "Implement safe worker recovery and isolation"
+    "Implement safe worker isolation and recovery",
+    "Design per-user authorization and budget controls"
   ],
   "pending_tasks": [
     "Full project and agent management",
@@ -83,9 +83,13 @@
     {
       "command": "cd backend && ../.venv/bin/pytest -q",
       "result": "27 passed on SQLite including busy agent starvation and manual subsequent batch; provider mocked; Starlette/Pydantic warnings"
+    },
+    {
+      "command": "gh pr checks 5 --watch at 02bffe3",
+      "result": "All passed including PostgreSQL available-agent selection, Chromium, frontend, prototype matrix and CodeQL"
     }
   ],
-  "build_status": "PostgreSQL and full GitHub CI pending",
+  "build_status": "All PR checks passed at 02bffe3; later commits require separate verification.",
   "errors_encountered": [
     "New workspace had no virtualenv; created ignored environment and installed backend test dependencies.",
     "Starlette httpx deprecation and occasional Pydantic warning persist."
