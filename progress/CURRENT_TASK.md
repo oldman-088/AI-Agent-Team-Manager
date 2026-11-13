@@ -1,3 +1,3 @@
 # Current task
 
-Verify terminal unassignment UI and assignment versus agent move concurrency on GitHub Actions, then design authenticated audit and safe execution.
+Design authenticated audit and safe agent execution; expand accessibility and concurrency coverage. All PR checks passed at `4158e99`.
