@@ -1,3 +1,3 @@
 # Current task
 
-Verify agent registry migration, CRUD and security checks in CI; design actual execution and lifecycle without reporting nonexistent processes as active.
+Design actual agent execution and lifecycle without reporting nonexistent processes as active. PostgreSQL, frontend, prototype and CodeQL checks passed at `559ea93`.
