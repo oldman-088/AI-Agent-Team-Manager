@@ -1,3 +1,3 @@
 # Current task
 
-Continue Phase 1, dependency review and agent lifecycle design. PostgreSQL, frontend, prototype and CodeQL checks passed on `f026504`.
+Verify agent registry migration, CRUD and security checks in CI; design actual execution and lifecycle without reporting nonexistent processes as active.

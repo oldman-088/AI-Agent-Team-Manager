@@ -1,3 +1,3 @@
 # Project status
 
-Phases 0 and 1 are in progress. Basic project CRUD exists in the new backend and creation/listing in the frontend. Overall platform completion remains unknown. See `WORKFLOW_REPORT.md` and `docs/ROADMAP.md`; reports are not operational database state.
+Phases 0–2 are in progress. The new backend supports basic project and agent-configuration records; no agent execution or lifecycle exists. Overall completion is unknown. See `WORKFLOW_REPORT.md` and `docs/ROADMAP.md`; development reports are not operational database state.

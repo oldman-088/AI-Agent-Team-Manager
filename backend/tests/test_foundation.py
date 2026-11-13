@@ -67,7 +67,26 @@ def test_migration_and_readiness(tmp_path, monkeypatch):
             assert client.post('/api/projects', content='name=x', headers={'content-type': 'application/x-www-form-urlencoded'}).status_code == 415
             assert client.delete(f'/api/projects/{project_id}', headers={'sec-fetch-site': 'cross-site'}).status_code == 403
             assert client.get('/api/projects/999999999999999999999').status_code == 422
+            assert client.post('/api/agents', json={'name': 'x', 'role': 'qa', 'project_id': 2147483647}).status_code == 422
+            assert client.post('/api/agents', json={'name': ' ', 'role': 'qa'}).status_code == 422
+            result = client.post('/api/agents', json={'name': ' Ada ', 'role': 'Developer', 'project_id': project_id, 'provider': 'example', 'model': 'configured only'})
+            assert result.status_code == 201
+            agent = result.json()
+            assert agent['name'] == 'Ada' and agent['execution_status'] == 'not_implemented'
+            agent_id = agent['id']
+            assert client.get('/api/agents').json()[0]['id'] == agent_id
+            assert client.get(f'/api/agents/{agent_id}').json()['project_id'] == project_id
+            assert client.patch(f'/api/agents/{agent_id}', json={'instructions': 'Review carefully'}).json()['instructions'] == 'Review carefully'
+            assert client.patch(f'/api/agents/{agent_id}', json={'name': None}).status_code == 422
+            assert client.patch(f'/api/agents/{agent_id}', json={'project_id': None}).json()['project_id'] is None
+            assert client.patch(f'/api/agents/{agent_id}', json={'project_id': project_id}).json()['project_id'] == project_id
+            assert client.post(f'/api/agents/{agent_id}/start', json={}).status_code == 404
+            assert client.get('/api/agents?limit=101').status_code == 422
+            assert client.patch(f'/api/agents/{agent_id}', json={'execution_status': 'running'}).status_code == 422
             assert client.delete(f'/api/projects/{project_id}').status_code == 204
+            assert client.get(f'/api/agents/{agent_id}').json()['project_id'] is None
+            assert client.delete(f'/api/agents/{agent_id}').status_code == 204
+            assert client.get(f'/api/agents/{agent_id}').status_code == 404
             assert client.get(f'/api/projects/{project_id}').status_code == 404
         command.downgrade(config, 'base')
         assert 'projects' not in inspect(engine).get_table_names()

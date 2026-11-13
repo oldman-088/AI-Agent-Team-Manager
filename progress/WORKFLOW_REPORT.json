@@ -1,9 +1,9 @@
 {
-  "last_updated_utc": "2026-11-13T16:49:33+00:00",
+  "last_updated_utc": "2026-11-13T16:52:52+00:00",
   "overall_completion_percentage": null,
   "completion_note": "Unknown: full specification is broad and not yet decomposed into weighted verifiable tasks. Do not extrapolate from the prototype.",
-  "current_phase": "Phase 0 and Phase 1 \u2014 In Progress",
-  "current_task": "Continue Phase 1 and plan agent lifecycle",
+  "current_phase": "Phases 0, 1 and 2 \u2014 In Progress",
+  "current_task": "Validate agent registry and migration in CI",
   "completed_tasks": [
     "Inspected repository, branches, permissions and local tools",
     "Researched candidate repositories and documented preliminary findings",
@@ -16,11 +16,15 @@
     "Added backend PostgreSQL and frontend CI workflows",
     "Implemented basic project CRUD with validation and migration",
     "Added local host and cross-origin request safeguards",
-    "Added frontend project creation and listing"
+    "Added frontend project creation and listing",
+    "Added agent configuration CRUD and optional project assignment",
+    "Added agent registry migration and SQLite foreign key enforcement",
+    "Added basic agent creation and list UI"
   ],
   "in_progress_tasks": [
-    "Complete dependency security and license review",
-    "Design agent lifecycle and execution boundaries"
+    "Validate agent registry against PostgreSQL and CI security checks",
+    "Design real agent execution and lifecycle",
+    "Complete dependency and license review"
   ],
   "pending_tasks": [
     "Full project and agent management",
@@ -30,24 +34,23 @@
     "Browser end-to-end testing"
   ],
   "files_created": [
-    "backend/app/api/__init__.py",
-    "backend/app/api/projects.py",
-    "backend/app/schemas.py",
-    "backend/app/security.py",
-    "backend/alembic/versions/0002_project_fields.py",
-    "frontend/src/projects.ts",
-    "frontend/src/projects.test.ts"
+    "backend/alembic/versions/0003_agents.py",
+    "backend/app/api/agents.py",
+    "frontend/src/agents.ts",
+    "frontend/src/agents.test.ts"
   ],
   "files_modified": [
     "backend/app/models.py",
+    "backend/app/database.py",
     "backend/app/main.py",
+    "backend/app/schemas.py",
     "backend/tests/test_foundation.py",
     "backend/README.md",
-    "frontend/vite.config.ts",
     "frontend/src/main.tsx",
     "frontend/src/style.css",
     "frontend/README.md",
     "README.md",
+    "docs/ROADMAP.md",
     "docs/ARCHITECTURE.md",
     "progress/WORKFLOW_REPORT.md",
     "progress/WORKFLOW_REPORT.json",
@@ -58,12 +61,12 @@
   ],
   "tests_executed": [
     {
-      "command": "cd backend && pytest -v",
-      "result": "3 passed locally, including SQLite migration, CRUD and local security checks; one Starlette deprecation warning"
+      "command": "cd backend && pytest -q",
+      "result": "3 passed, SQLite migration and agent/project CRUD; Starlette httpx deprecation warning"
     },
     {
       "command": "cd frontend && npm run typecheck && npm test && npm run build",
-      "result": "Passed; 4 tests"
+      "result": "Passed; 6 tests and production build"
     },
     {
       "command": "cd frontend && npm audit --audit-level=high",
@@ -74,28 +77,24 @@
       "result": "2 passed"
     },
     {
-      "command": "python scripts/check_docs.py; python -m compileall -q backend/app backend/tests; git diff --check",
+      "command": "python scripts/check_docs.py; git diff --check",
       "result": "Passed before report update"
-    },
-    {
-      "command": "GitHub Actions PR checks at f026504",
-      "result": "All passed: PostgreSQL migration and project CRUD, frontend, prototype matrix, CodeQL"
     }
   ],
-  "build_status": "All PR checks passed at f026504; newer commits require their own checks.",
+  "build_status": "Frontend build passed locally; new GitHub CI pending. Previous project CRUD passed PostgreSQL CI at f026504.",
   "errors_encountered": [
-    "Starlette TestClient deprecation warning for httpx"
+    "Starlette TestClient httpx deprecation warning"
   ],
   "fixes_implemented": [],
   "blockers": [
-    "No project license selected",
-    "PostgreSQL unavailable locally; migration and CRUD passed against PostgreSQL in CI",
-    "Authentication, project isolation, browser E2E and most platform features remain unimplemented"
+    "Project license not selected",
+    "PostgreSQL unavailable locally; new agent registry tests require CI validation",
+    "Agent execution, lifecycle, heartbeat, security and most requested capabilities remain unimplemented"
   ],
   "next_actions": [
-    "Implement agent management with real lifecycle semantics",
-    "Lock and audit Python dependencies",
-    "Expand browser end-to-end and security validation"
+    "Verify PostgreSQL and security CI",
+    "Design and implement actual lifecycle/execution with safe process isolation",
+    "Lock and audit Python dependencies"
   ],
-  "estimated_remaining_work": "Most of the specified platform remains; reliable duration unknown."
+  "estimated_remaining_work": "Most of the platform remains; reliable duration unknown."
 }

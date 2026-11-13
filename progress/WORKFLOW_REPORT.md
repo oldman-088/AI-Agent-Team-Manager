@@ -1,22 +1,22 @@
 # Workflow report
 
-Last updated: 2026-11-13T16:49:33+00:00
+Last updated: 2026-11-13T16:52:52+00:00
 
-Overall completion: **unknown**; the full specification is not decomposed into weighted, verifiable tasks. Phases 0 and 1 are **in progress**.
+Overall completion: **unknown**; full scope is not yet decomposed into weighted, verifiable work. Phases 0, 1 and 2 are **in progress**; the early registry does not imply earlier phase completion.
 
 ## Completed this checkpoint
 
-- Implemented basic project CRUD for name, description and status, with input validation, bounded pagination and a reversible migration preserving existing 0001 records.
-- Added localhost Host and cross-origin protections; these do not provide authentication or protect against malicious local processes.
-- Added project creation and listing to the React dashboard. Project edit/delete is API-only.
+- Added agent configuration CRUD for name, role, description, instructions, provider/model labels and optional project assignment, plus a reversible migration. Deleting a project unassigns its agents.
+- Added agent creation and listing to the frontend. The API exposes editing and deletion.
+- Agent records explicitly report `not_implemented` for execution; no processes are started, provider connectivity verified, or lifecycle/heartbeat fabricated.
 
-## Tests
+## Verification
 
-- Backend: 3 tests passed locally, including SQLite migration upgrade/downgrade, CRUD and host/origin checks. The PostgreSQL CI test for these changes passed. Starlette emitted an httpx deprecation warning.
-- Frontend: typecheck, 4 tests and build passed; npm audit reported zero vulnerabilities.
-- Legacy tests: 2 passed. Documentation inventory, Python compilation and `git diff --check` passed before report update.
-- All PR checks passed at `f026504`: [PostgreSQL migration and CRUD](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43466440558), [frontend](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43466440745), [prototype matrix](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43466440678), and [CodeQL](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43466440651). Later commits need their own checks.
+- Backend: 3 tests passed locally, covering SQLite migration, CRUD and project unassignment. Starlette emitted an httpx deprecation warning.
+- Frontend: typecheck, 6 tests and build passed. npm audit reported zero vulnerabilities.
+- Legacy tests: 2 passed. Documentation inventory and `git diff --check` passed before report update.
+- PostgreSQL and CodeQL checks for these changes are pending. Previous project changes passed CI at `f026504`.
 
 ## Limitations and next actions
 
-The service is local-only and unauthenticated, with no project isolation, agent execution or provider integration. Legacy data is not migrated. Browser E2E remains untested, Python dependencies are not locked, and no project license has been selected. Review dependencies, then implement agent management with real lifecycle semantics. Most of the platform remains; a reliable time estimate is unavailable. See the JSON report for file inventory.
+The registry stores configuration only, in plaintext; do not place secrets in it. There is no authentication, agent process, lifecycle, heartbeat, concurrency enforcement, browser E2E or production security. PostgreSQL is unavailable locally; verify CI, then design actual execution and isolation. The project license and Python dependency locking remain unresolved. Most of the platform remains; a reliable duration estimate is unavailable. See JSON report for file inventory.
