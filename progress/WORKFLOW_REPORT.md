@@ -1,6 +1,6 @@
 # Workflow report
 
-Last updated: 2026-11-13T18:45:52+00:00
+Last updated: 2026-11-13T18:47:14+00:00
 
 ## Completion indicator
 
@@ -46,4 +46,4 @@ Added a separate opt-in local single-shot text completion using stdin, with inde
 
 ## Initial assigned-task execution checkpoint
 
-A manual local worker now claims one ready assigned task, snapshots its agent/task content, and calls the OpenAI adapter after explicit transfer and billing confirmations. A project lock and partial unique index prevent simultaneous unresolved runs. It stores metadata and token counts, prints an untrusted draft, and leaves task completion manual. Timeout/crash can leave uncertain/running state; no automatic retry or expiry; operator resolution requires stopping and investigating the original worker. Agent/task history restricts deletion and retention management is absent. Backend 21 tests passed on SQLite with mocked provider including competing claims and uncertainty; frontend typecheck, 17 tests and build passed, npm audit zero. PostgreSQL, browser and CodeQL CI pending. No live call, authentication, sandbox, scheduler, complete lifecycle or production readiness. Acceptance remains 4/30.
+A manual local worker now claims one ready assigned task, snapshots its agent/task content, and calls the OpenAI adapter after explicit transfer and billing confirmations. A project lock and partial unique index prevent simultaneous unresolved runs. It stores metadata and token counts, prints an untrusted draft, and leaves task completion manual. Timeout/crash can leave uncertain/running state; no automatic retry or expiry; operator resolution requires stopping and investigating the original worker. Agent/task history restricts deletion and retention management is absent. Backend 21 tests passed on SQLite with mocked provider including competing claims and uncertainty; frontend typecheck, 17 tests and build passed, npm audit zero. All PR checks passed at `f103692`: [PostgreSQL migration and mocked worker/concurrent claims](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43485797506), [Chromium](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43485797474), [frontend](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43485797492), [prototype matrix](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43485797445) and [CodeQL](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43485797496). Later commits need separate verification. No live call, authentication, sandbox, scheduler, complete lifecycle or production readiness. Acceptance remains 4/30.

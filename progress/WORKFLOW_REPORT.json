@@ -1,9 +1,9 @@
 {
-  "last_updated_utc": "2026-11-13T18:45:52+00:00",
+  "last_updated_utc": "2026-11-13T18:47:14+00:00",
   "overall_completion_percentage": null,
   "completion_note": "Total project effort completion unknown. The acceptance-criteria indicator is conservative and equally weighted; it is not an estimate of effort or delivery date.",
   "current_phase": "Phases 0–4 and partial Phase 10 in progress",
-  "current_task": "Verify manual assigned task worker and migration in CI",
+  "current_task": "Build authenticated agent lifecycle and safe scheduling",
   "completed_tasks": [
     "Inspected repository, branches, permissions and local tools",
     "Researched candidate repositories and documented preliminary findings",
@@ -49,8 +49,8 @@
     "Added manual assigned-task text execution with durable run metadata, mocked tests and run history UI"
   ],
   "in_progress_tasks": [
-    "Verify manual task execution and concurrent claim on PostgreSQL and browser",
-    "Design authenticated lifecycle and automatic scheduling"
+    "Design and implement authenticated agent lifecycle and safe scheduling",
+    "Expand real-provider and platform validation where authorized"
   ],
   "pending_tasks": [
     "Full project and agent management",
@@ -99,9 +99,13 @@
     {
       "command": "cd frontend && npm audit --audit-level=high",
       "result": "0 vulnerabilities"
+    },
+    {
+      "command": "gh pr checks 4 --watch at f103692",
+      "result": "All passed: PostgreSQL migration, mocked worker and competing claims, Chromium, frontend, prototype matrix and CodeQL. No real provider request."
     }
   ],
-  "build_status": "PostgreSQL migration/claim race and browser/CodeQL CI pending",
+  "build_status": "All PR checks passed at f103692; later commits require their own checks.",
   "errors_encountered": [
     "Initial SQLite test exposed partial multi-revision downgrade when later guard raised; test now restores head and documentation warns about SQLite DDL behavior.",
     "Starlette httpx deprecation warning persists."
@@ -116,9 +120,9 @@
     "Run history deletion/retention management not implemented"
   ],
   "next_actions": [
-    "Verify PostgreSQL and browser CI",
-    "Implement secure authenticated lifecycle and safe scheduling",
-    "Investigate authorized live provider verification without exposing keys"
+    "Implement authenticated agent lifecycle and safe scheduling",
+    "Address run retention and execution isolation",
+    "Verify provider only with authorized live credentials and billing consent"
   ],
   "estimated_remaining_work": "26 of 30 full acceptance criteria remain unverified; duration unknown.",
   "acceptance_criteria_completion_percentage": 13.3,
