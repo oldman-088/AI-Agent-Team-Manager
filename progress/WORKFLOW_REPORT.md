@@ -1,6 +1,6 @@
 # Workflow report
 
-Last updated: 2026-11-13T16:48:29+00:00
+Last updated: 2026-11-13T16:49:33+00:00
 
 Overall completion: **unknown**; the full specification is not decomposed into weighted, verifiable tasks. Phases 0 and 1 are **in progress**.
 
@@ -12,11 +12,11 @@ Overall completion: **unknown**; the full specification is not decomposed into w
 
 ## Tests
 
-- Backend: 3 tests passed locally, including SQLite migration upgrade/downgrade, CRUD and host/origin checks. PostgreSQL verification for these new changes is pending CI. Starlette emitted an httpx deprecation warning.
+- Backend: 3 tests passed locally, including SQLite migration upgrade/downgrade, CRUD and host/origin checks. The PostgreSQL CI test for these changes passed. Starlette emitted an httpx deprecation warning.
 - Frontend: typecheck, 4 tests and build passed; npm audit reported zero vulnerabilities.
 - Legacy tests: 2 passed. Documentation inventory, Python compilation and `git diff --check` passed before report update.
-- Previous commit `d606595` passed PostgreSQL migration/readiness, frontend, prototype matrix, and CodeQL in GitHub Actions. Current changes need their own checks.
+- All PR checks passed at `f026504`: [PostgreSQL migration and CRUD](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43466440558), [frontend](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43466440745), [prototype matrix](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43466440678), and [CodeQL](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43466440651). Later commits need their own checks.
 
 ## Limitations and next actions
 
-The service is local-only and unauthenticated, with no project isolation, agent execution or provider integration. Legacy data is not migrated. Browser E2E remains untested, Python dependencies are not locked, and no project license has been selected. Verify current CI, review dependencies, then implement agent management with real lifecycle semantics. Most of the platform remains; a reliable time estimate is unavailable. See the JSON report for file inventory.
+The service is local-only and unauthenticated, with no project isolation, agent execution or provider integration. Legacy data is not migrated. Browser E2E remains untested, Python dependencies are not locked, and no project license has been selected. Review dependencies, then implement agent management with real lifecycle semantics. Most of the platform remains; a reliable time estimate is unavailable. See the JSON report for file inventory.
