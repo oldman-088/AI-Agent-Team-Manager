@@ -96,6 +96,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     resolve = sub.add_parser('resolve', help='Release an unresolved run after manual investigation')
     resolve.add_argument('--run-id', type=int, required=True)
     resolve.add_argument('--confirm-worker-stopped', action='store_true')
+    resolve.add_argument('--override-recent-or-unknown-heartbeat', action='store_true',
+                         help='Override the extra guard only after independent investigation; this cannot stop a remote request')
     args = parser.parse_args(argv)
     if args.action == 'run' and (not args.confirm_billable or not args.confirm_data_transfer or not 1 <= args.task_id <= 2147483647):
         print('Valid task ID and both billing and data-transfer confirmations required.', file=sys.stderr)
@@ -114,8 +116,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         if args.action == 'run':
             return asyncio.run(run_once(engine, args.task_id, key, OpenAIProvider.from_api_key))
         with Session(engine) as db:
-            if not resolve_run(db, args.run_id):
-                print('Run not found or not unresolved.', file=sys.stderr)
+            if not resolve_run(db, args.run_id, allow_recent_or_unknown=args.override_recent_or_unknown_heartbeat):
+                print('Run unavailable or running with recent/unknown heartbeat; inspect before overriding.', file=sys.stderr)
                 return 2
         print('Run resolved without asserting success; any remote outcome remains unknown.')
         return 0

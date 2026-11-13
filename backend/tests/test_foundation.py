@@ -18,7 +18,7 @@ from app.config import Settings
 from app.database import make_engine
 from app.main import create_app
 from app.services.task_runs import prepare_run, resolve_run, heartbeat_run, RunRejected
-from app.task_worker import run_once
+from app.task_worker import run_once, main as worker_main
 from app.task_scheduler import select_candidates, run_batch
 from app.providers.base import CompletionResult, TokenUsage
 
@@ -213,9 +213,22 @@ def test_migration_and_readiness(tmp_path, monkeypatch, capsys):
                 with Session(worker_engine) as session:
                     assert heartbeat_run(session, run_id)
                 assert client.get(f'/api/tasks/{task_id}/runs').json()[0]['heartbeat_state'] == 'fresh'
+                # A recent heartbeat blocks ordinary manual resolution atomically.
                 with Session(worker_engine) as session:
-                    assert resolve_run(session, run_id)
+                    assert not resolve_run(session, run_id)
+                    assert heartbeat_run(session, run_id)
+                assert worker_main(['resolve', '--run-id', str(run_id), '--confirm-worker-stopped']) == 2
+                with worker_engine.begin() as connection:
+                    connection.execute(text('UPDATE task_runs SET heartbeat_at = NULL WHERE id = :id'), {'id': run_id})
+                with Session(worker_engine) as session:
+                    assert not resolve_run(session, run_id)
+                    assert not resolve_run(session, run_id)
+                assert worker_main(['resolve', '--run-id', str(run_id), '--confirm-worker-stopped', '--override-recent-or-unknown-heartbeat']) == 0
+                with Session(worker_engine) as session:
                     assert not heartbeat_run(session, run_id)
+                # Preserve heartbeat data to exercise the older downgrade guard.
+                with worker_engine.begin() as connection:
+                    connection.execute(text('UPDATE task_runs SET heartbeat_at = :ts WHERE id = :id'), {'id': run_id, 'ts': datetime.now(timezone.utc)})
                 with pytest.raises(RuntimeError, match='heartbeat data exists'):
                     command.downgrade(config, '0009')
                 # SQLite can commit earlier downgrade DDL; restore head before continuing.
@@ -244,6 +257,37 @@ def test_migration_and_readiness(tmp_path, monkeypatch, capsys):
                 assert runs[0]['input_tokens'] == 7 and runs[0]['output_tokens'] == 2
                 assert 'Private instruction' not in str(runs) and 'draft output' not in str(runs)
                 assert 'draft output' in capsys.readouterr().out
+                # A stale timestamp permits manual resolution, never automatic release.
+                with Session(worker_engine) as session:
+                    stale_id = prepare_run(session, task_id).run_id
+                with worker_engine.begin() as connection:
+                    connection.execute(text('UPDATE task_runs SET heartbeat_at = :ts WHERE id = :id'), {'id': stale_id, 'ts': datetime.now(timezone.utc) - timedelta(minutes=3)})
+                assert worker_main(['resolve', '--run-id', str(stale_id)]) == 2
+                assert worker_main(['resolve', '--run-id', str(stale_id), '--confirm-worker-stopped']) == 0
+                # Fresh heartbeat override is explicit; it cannot stop an actual remote call.
+                with Session(worker_engine) as session:
+                    fresh_id = prepare_run(session, task_id).run_id
+                    assert not resolve_run(session, fresh_id)
+                    assert resolve_run(session, fresh_id, allow_recent_or_unknown=True)
+                # A competing heartbeat and resolution cannot both succeed against a stale claim.
+                with Session(worker_engine) as session:
+                    race_id = prepare_run(session, task_id).run_id
+                with worker_engine.begin() as connection:
+                    connection.execute(text('UPDATE task_runs SET heartbeat_at = :ts WHERE id = :id'), {'id': race_id, 'ts': datetime.now(timezone.utc) - timedelta(minutes=3)})
+                race_barrier = Barrier(2)
+                def attempt_update(action):
+                    race_barrier.wait(timeout=5)
+                    with Session(worker_engine) as session:
+                        return action(session, race_id)
+                with ThreadPoolExecutor(max_workers=2) as pool:
+                    resolved_future = pool.submit(attempt_update, resolve_run)
+                    heartbeat_future = pool.submit(attempt_update, heartbeat_run)
+                    resolved, beat = resolved_future.result(timeout=20), heartbeat_future.result(timeout=20)
+                assert resolved != beat
+                if not resolved:
+                    with Session(worker_engine) as session:
+                        assert not resolve_run(session, race_id)
+                        assert resolve_run(session, race_id, allow_recent_or_unknown=True)
                 failed = Mock(complete=AsyncMock(side_effect=RuntimeError('secret')), close=AsyncMock())
                 assert asyncio.run(run_once(worker_engine, task_id, 'key', lambda _: failed)) == 1
                 uncertain = client.get(f'/api/tasks/{task_id}/runs').json()[0]

@@ -68,3 +68,7 @@ As an interim local-only safeguard, accept a configured high-entropy shared bear
 ## 2026-11-13: Unresolved run discovery
 
 Provide bounded, read-only, keyset-paginated cross-project unresolved run metadata and a first-page dashboard view to help operators locate capacity held by uncertain or interrupted runs. No mutation, automatic expiry, lease or retry is added. Heartbeat interpretations share one implementation and remain advisory; `not_running` describes the database status only, not evidence of process or remote termination. Concurrent changes between pages mean this is not an atomic inventory. The optional local bearer gate applies; default unauthenticated operation remains local-only.
+
+## 2026-11-13: Guard manual resolution against recent or unknown heartbeats
+
+For `running` claims, default manual resolution refuses recent or missing heartbeats using a conditional update, preventing a successful earlier competing heartbeat from being ignored. A deliberately named CLI override is required in addition to explicit confirmation of worker stoppage. Uncertain runs retain the previous confirmation process. This is a precaution, not a lease, fencing token, distributed process monitor or proof of remote cancellation; stale heartbeat, clock skew and early human confirmation can still permit duplicate calls. Never automatically resolve or retry based on age.

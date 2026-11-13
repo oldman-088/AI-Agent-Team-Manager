@@ -1,3 +1,3 @@
 # Current task
 
-Design and implement safe worker recovery and isolation, per-user authorization and budget controls. Unresolved worker discovery passed PostgreSQL and browser CI at `d55a09b`.
+Verify manual resolution heartbeat guard and concurrent heartbeat race on PostgreSQL CI. Then design safe worker isolation, real identity and budget controls.

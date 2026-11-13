@@ -1,9 +1,9 @@
 """Durable manual text runs; no scheduler, tools or automatic task completion."""
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from fastapi import HTTPException
-from sqlalchemy import func, select, text, update
+from sqlalchemy import and_, func, or_, select, text, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -89,9 +89,19 @@ def finish_run(db: Session, run_id: int, result: CompletionResult | None) -> boo
     return bool(changed)
 
 
-def resolve_run(db: Session, run_id: int) -> bool:
-    # Explicit human action only; never assert success or automatically retry.
-    changed = db.execute(update(TaskRun).where(TaskRun.id == run_id, TaskRun.status.in_(['running', 'uncertain']))
+def resolve_run(db: Session, run_id: int, *, allow_recent_or_unknown: bool = False) -> bool:
+    """Release only with human confirmation; heartbeat guard is not proof of termination.
+
+    The heartbeat predicate is part of the UPDATE so a concurrent fresh heartbeat
+    cannot slip between an advisory read and the state change.
+    """
+    predicate = TaskRun.status.in_(['running', 'uncertain'])
+    if not allow_recent_or_unknown:
+        cutoff = datetime.now(timezone.utc) - timedelta(seconds=30)
+        predicate = and_(predicate, or_(TaskRun.status == 'uncertain',
+                         and_(TaskRun.status == 'running', TaskRun.heartbeat_at.is_not(None),
+                              TaskRun.heartbeat_at < cutoff)))
+    changed = db.execute(update(TaskRun).where(TaskRun.id == run_id, predicate)
                          .values(status='resolved', finished_at=datetime.now(timezone.utc))).rowcount
     db.commit()
     return bool(changed)

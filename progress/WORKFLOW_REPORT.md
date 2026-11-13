@@ -1,6 +1,6 @@
 # Workflow report
 
-Last updated: 2026-11-13T19:18:39+00:00
+Last updated: 2026-11-13T19:33:20+00:00
 
 ## Completion indicator
 
@@ -67,3 +67,7 @@ Researched fastapi-users, Authlib and Starlette; added an optional local shared 
 ## Unresolved run inspection checkpoint
 
 Added read-only cross-project unresolved-run API with bounded keyset pagination and translated first-page dashboard. Heartbeat state is advisory; `not_running` indicates database status only, not process or remote termination. No automatic resolution, lease, expiry or retry. SQLite 27 tests and frontend 19 tests/typecheck/build passed; npm audit zero. All PR checks passed at `d55a09b`, including [PostgreSQL](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43490735517), [authenticated Chromium](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43490735447), and [CodeQL](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43490735431). The initial browser failure exposed a missing dashboard render; fixed and retested. Later commits need separate verification. Acceptance remains 4/30.
+
+## Manual resolution precaution checkpoint
+
+Added a conditional-update guard blocking ordinary manual resolution of running claims with recent or missing heartbeats; an additional explicit CLI override is available after independent investigation. A concurrent heartbeat that updates first blocks resolution. Stale heartbeat still does not prove termination, and the override does not cancel the remote request. No automatic expiry or retry. SQLite 27 tests pass including the heartbeat/resolution race; PostgreSQL and full CI pending. Acceptance remains 4/30.
