@@ -1,6 +1,6 @@
 # Workflow report
 
-Last updated: 2026-11-13T19:33:20+00:00
+Last updated: 2026-11-13T19:35:09+00:00
 
 ## Completion indicator
 
@@ -70,4 +70,8 @@ Added read-only cross-project unresolved-run API with bounded keyset pagination 
 
 ## Manual resolution precaution checkpoint
 
-Added a conditional-update guard blocking ordinary manual resolution of running claims with recent or missing heartbeats; an additional explicit CLI override is available after independent investigation. A concurrent heartbeat that updates first blocks resolution. Stale heartbeat still does not prove termination, and the override does not cancel the remote request. No automatic expiry or retry. SQLite 27 tests pass including the heartbeat/resolution race; PostgreSQL and full CI pending. Acceptance remains 4/30.
+Added a conditional-update guard blocking ordinary manual resolution of running claims with recent or missing heartbeats; an additional explicit CLI override is available after independent investigation. A concurrent heartbeat that updates first blocks resolution. Stale heartbeat still does not prove termination, and the override does not cancel the remote request. No automatic expiry or retry. SQLite 27 tests pass including the heartbeat/resolution race; All PR checks passed at `dbe17f8`, including [PostgreSQL race](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43493329299), [Chromium](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43493329227) and [CodeQL](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43493329401). Later commits need separate verification. Acceptance remains 4/30.
+
+## Batch preview checkpoint
+
+Added read-only scheduler `--dry-run` to display a bounded candidate snapshot without a provider key, claims or calls. It does not check every claim restriction or reserve work. SQLite 27 backend tests pass, including a forbidden provider factory assertion. PostgreSQL and full CI pending. Acceptance remains 4/30.

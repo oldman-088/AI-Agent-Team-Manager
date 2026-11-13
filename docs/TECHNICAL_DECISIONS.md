@@ -72,3 +72,7 @@ Provide bounded, read-only, keyset-paginated cross-project unresolved run metada
 ## 2026-11-13: Guard manual resolution against recent or unknown heartbeats
 
 For `running` claims, default manual resolution refuses recent or missing heartbeats using a conditional update, preventing a successful earlier competing heartbeat from being ignored. A deliberately named CLI override is required in addition to explicit confirmation of worker stoppage. Uncertain runs retain the previous confirmation process. This is a precaution, not a lease, fencing token, distributed process monitor or proof of remote cancellation; stale heartbeat, clock skew and early human confirmation can still permit duplicate calls. Never automatically resolve or retry based on age.
+
+## 2026-11-13: Non-billable batch preview
+
+The one-shot scheduler offers a read-only `--dry-run` showing bounded candidate IDs without credentials, claims or provider creation. It shares the existing advisory selector, so concurrent changes, capacity and unresolved runs may still prevent later claims; preview is not authorization or a scheduling guarantee. Executing remains opt-in with both cost and data transfer confirmations.

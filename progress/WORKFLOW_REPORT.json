@@ -1,9 +1,9 @@
 {
-  "last_updated_utc": "2026-11-13T19:33:20+00:00",
+  "last_updated_utc": "2026-11-13T19:35:09+00:00",
   "overall_completion_percentage": null,
   "completion_note": "Total project effort completion unknown. The acceptance-criteria indicator is conservative and equally weighted; it is not an estimate of effort or delivery date.",
   "current_phase": "Phases 0–4 and partial Phase 10 in progress",
-  "current_task": "Verify guarded manual resolution race on PostgreSQL CI",
+  "current_task": "Verify scheduler dry-run preview in PostgreSQL CI",
   "completed_tasks": [
     "Inspected repository, branches, permissions and local tools",
     "Researched candidate repositories and documented preliminary findings",
@@ -52,10 +52,11 @@
     "Implemented shared 20-unresolved-run and one-per-agent claim limits",
     "Added optional local shared API bearer gate and in-memory dashboard support",
     "Added read-only cross-project unresolved worker inspection",
-    "Added precautionary manual-resolution heartbeat guard"
+    "Added precautionary manual-resolution heartbeat guard",
+    "Added non-billable scheduler candidate preview"
   ],
   "in_progress_tasks": [
-    "Verify guarded manual resolution on PostgreSQL CI",
+    "Verify scheduler dry-run preview in GitHub CI",
     "Design worker isolation and safe recovery"
   ],
   "pending_tasks": [
@@ -67,8 +68,7 @@
   ],
   "files_created": [],
   "files_modified": [
-    "backend/app/services/task_runs.py",
-    "backend/app/task_worker.py",
+    "backend/app/task_scheduler.py",
     "backend/tests/test_foundation.py",
     "backend/README.md",
     "docs/TECHNICAL_DECISIONS.md",
@@ -81,20 +81,19 @@
   "tests_executed": [
     {
       "command": "cd backend && pytest -q",
-      "result": "27 passed on SQLite including recent/unknown/stale/override manual resolution and competing heartbeat; mock provider only; Starlette warning"
+      "result": "27 passed on SQLite including dry-run with no key, no claims and mocked forbidden provider construction; Starlette warning"
     },
     {
-      "command": "gh pr checks 4 at 851ac7f",
-      "result": "All previous PR checks passed including PostgreSQL, Chromium and CodeQL"
+      "command": "gh pr checks 4 --watch at dbe17f8",
+      "result": "All checks passed including PostgreSQL heartbeat resolution race, Chromium and CodeQL"
     }
   ],
-  "build_status": "Manual resolution guard PostgreSQL CI pending",
+  "build_status": "Scheduler preview CI pending",
   "errors_encountered": [
-    "Adjusted downgrade test fixture to preserve heartbeat after testing unknown state; tests now pass.",
     "Starlette httpx deprecation warning persists."
   ],
   "fixes_implemented": [
-    "Prevent ordinary manual resolution of running claims with recent or unknown heartbeat, with explicit override; conditional UPDATE guards against concurrent heartbeat."
+    "Added read-only bounded scheduler preview without credentials, confirmations, claims or provider calls."
   ],
   "blockers": [
     "No project license selected",
@@ -104,7 +103,7 @@
     "Heartbeat is advisory; no automatic safe recovery or run retention management"
   ],
   "next_actions": [
-    "Verify PostgreSQL concurrency and full GitHub CI",
+    "Verify PostgreSQL and full GitHub CI",
     "Design process isolation and safe remote recovery",
     "Implement per-user authorization and budget controls"
   ],

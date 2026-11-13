@@ -19,7 +19,7 @@ from app.database import make_engine
 from app.main import create_app
 from app.services.task_runs import prepare_run, resolve_run, heartbeat_run, RunRejected
 from app.task_worker import run_once, main as worker_main
-from app.task_scheduler import select_candidates, run_batch
+from app.task_scheduler import select_candidates, run_batch, main as scheduler_main
 from app.providers.base import CompletionResult, TokenUsage
 
 BACKEND = Path(__file__).resolve().parents[1]
@@ -446,6 +446,19 @@ def test_migration_and_readiness(tmp_path, monkeypatch, capsys):
                     assert select_candidates(session, batch_project, 2) == batch_tasks[:2]
                     assert select_candidates(session, batch_project, 20) == batch_tasks[:3]
                     assert select_candidates(session, other_project, 20) == []
+                # Preview never needs a provider key or confirmations and never claims a run.
+                monkeypatch.delenv('OPENAI_API_KEY', raising=False)
+                with monkeypatch.context() as patch:
+                    forbidden = Mock(side_effect=AssertionError('provider must not be constructed'))
+                    patch.setattr('app.task_scheduler.OpenAIProvider.from_api_key', forbidden)
+                    assert scheduler_main(['--project-id', str(batch_project), '--max-tasks', '2', '--dry-run']) == 0
+                    forbidden.assert_not_called()
+                preview = capsys.readouterr().out
+                assert 'Preview only' in preview and f'Task #{batch_tasks[0]}' in preview
+                assert f'Task #{batch_tasks[2]}' not in preview
+                assert 'First' not in preview
+                assert client.get(f'/api/tasks/{batch_tasks[0]}/runs').json() == []
+                assert scheduler_main(['--project-id', str(batch_project), '--max-tasks', '2']) == 2
                 assert client.patch(f'/api/projects/{batch_project}', json={'status': 'paused'}).status_code == 200
                 with Session(batch_engine) as session:
                     assert select_candidates(session, batch_project, 20) == []

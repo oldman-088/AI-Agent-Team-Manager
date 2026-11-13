@@ -62,20 +62,31 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description='One-shot sequential, project-scoped text batch; can incur charges.')
     parser.add_argument('--project-id', type=int, required=True)
     parser.add_argument('--max-tasks', type=int, required=True, help='Maximum provider requests in this batch (1–20)')
+    parser.add_argument('--dry-run', action='store_true', help='Read-only candidate preview; no provider calls or claims')
     parser.add_argument('--confirm-billable', action='store_true')
     parser.add_argument('--confirm-data-transfer', action='store_true')
     args = parser.parse_args(argv)
-    if not 1 <= args.project_id <= 2147483647 or not 1 <= args.max_tasks <= MAX_BATCH or not args.confirm_billable or not args.confirm_data_transfer:
+    if (not 1 <= args.project_id <= 2147483647 or not 1 <= args.max_tasks <= MAX_BATCH
+            or (not args.dry_run and (not args.confirm_billable or not args.confirm_data_transfer))):
         print('Valid project and batch bounds and both confirmations are required.', file=sys.stderr)
         return 2
     key = os.environ.get('OPENAI_API_KEY', '')
     url = os.environ.get('AATM_DATABASE_URL', '')
-    if not url or not key.strip():
+    if not url or (not args.dry_run and not key.strip()):
         print('Required database or provider configuration missing.', file=sys.stderr)
         return 2
     engine = None
     try:
         engine = make_engine(url)
+        if args.dry_run:
+            with Session(engine) as db:
+                ids = select_candidates(db, args.project_id, args.max_tasks)
+            print('Preview only; no claims or provider calls. Candidates are snapshots and may change.')
+            for task_id in ids:
+                print(f'Task #{task_id}')
+            if not ids:
+                print('No eligible tasks in this snapshot.')
+            return 0
         return asyncio.run(run_batch(engine, args.project_id, args.max_tasks, key, OpenAIProvider.from_api_key))
     except Exception:
         print('Batch failed; inspect state before retrying.', file=sys.stderr)

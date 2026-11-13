@@ -1,3 +1,3 @@
 # Current task
 
-Verify manual resolution heartbeat guard and concurrent heartbeat race on PostgreSQL CI. Then design safe worker isolation, real identity and budget controls.
+Verify scheduler dry-run preview on PostgreSQL CI. Then design worker isolation, safe remote recovery, real identity and budget controls.
