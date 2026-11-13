@@ -1,9 +1,9 @@
 {
-  "last_updated_utc": "2026-11-13T19:01:29+00:00",
+  "last_updated_utc": "2026-11-13T19:02:43+00:00",
   "overall_completion_percentage": null,
   "completion_note": "Total project effort completion unknown. The acceptance-criteria indicator is conservative and equally weighted; it is not an estimate of effort or delivery date.",
   "current_phase": "Phases 0–4 and partial Phase 10 in progress",
-  "current_task": "Verify shared worker capacity and migration in PostgreSQL CI",
+  "current_task": "Research and implement authenticated control",
   "completed_tasks": [
     "Inspected repository, branches, permissions and local tools",
     "Researched candidate repositories and documented preliminary findings",
@@ -52,8 +52,8 @@
     "Implemented shared 20-unresolved-run and one-per-agent claim limits"
   ],
   "in_progress_tasks": [
-    "Verify 20-slot concurrency, per-agent uniqueness and upgrade guards on PostgreSQL",
-    "Implement authenticated control and durable safe recovery"
+    "Research authenticated local access and implement safe control",
+    "Design durable recovery and worker isolation"
   ],
   "pending_tasks": [
     "Full project and agent management",
@@ -87,9 +87,13 @@
     {
       "command": "cd backend && pytest -q",
       "result": "22 passed on SQLite including 20-slot concurrent race, per-agent unique index, upgrade duplicate guard and downgrade guard; mocked provider; Starlette deprecation warning"
+    },
+    {
+      "command": "gh pr checks 4 --watch at fa0b56e",
+      "result": "All passed including PostgreSQL capacity race and migration guard, Chromium, frontend, matrix and CodeQL; no live provider call"
     }
   ],
-  "build_status": "Global capacity and migration CI pending",
+  "build_status": "All PR checks passed at fa0b56e; later commits require separate verification.",
   "errors_encountered": [
     "New migration guard correctly blocked previous downgrade test; reordered tests to verify each guard.",
     "Starlette httpx deprecation warning persists."
@@ -105,8 +109,8 @@
     "No automatic safe recovery or run retention management"
   ],
   "next_actions": [
-    "Verify PostgreSQL and full GitHub CI",
-    "Implement authenticated control, isolation and safe recovery",
+    "Implement authenticated local control",
+    "Implement safe worker recovery and isolation",
     "Add actual budget enforcement"
   ],
   "estimated_remaining_work": "26 of 30 full acceptance criteria remain unverified; duration unknown.",

@@ -1,6 +1,6 @@
 # Workflow report
 
-Last updated: 2026-11-13T19:01:29+00:00
+Last updated: 2026-11-13T19:02:43+00:00
 
 ## Completion indicator
 
@@ -58,4 +58,4 @@ Added nullable heartbeat timestamps, periodic best-effort updates during the loc
 
 ## Shared worker capacity checkpoint
 
-Added a shared lock for application worker claims, enforcing at most 20 unresolved runs and one unresolved run per agent. Uncertain runs retain capacity; the agent rule is additionally enforced by a partial unique index. Migration 0011 refuses existing duplicate unresolved runs and blocks downgrade with unresolved runs. Local SQLite tests (22) include competing claims at the cap and legacy migration guards; PostgreSQL and full CI pending. Direct SQL and accidental resolution of a live process can bypass intended safety; no monetary budget, authenticated control or sandbox exists. Acceptance remains 4/30.
+Added a shared lock for application worker claims, enforcing at most 20 unresolved runs and one unresolved run per agent. Uncertain runs retain capacity; the agent rule is additionally enforced by a partial unique index. Migration 0011 refuses existing duplicate unresolved runs and blocks downgrade with unresolved runs. Local SQLite tests (22) include competing claims at the cap and legacy migration guards; All PR checks passed at `fa0b56e`, including [PostgreSQL capacity/concurrency and migration](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43488238616), [browser](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43488239029) and [CodeQL](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43488238622). Subsequent commits need separate verification. Direct SQL and accidental resolution of a live process can bypass intended safety; no monetary budget, authenticated control or sandbox exists. Acceptance remains 4/30.

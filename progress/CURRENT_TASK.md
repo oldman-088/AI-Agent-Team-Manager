@@ -1,3 +1,3 @@
 # Current task
 
-Verify global worker capacity, per-agent uniqueness and migration on PostgreSQL CI; implement authenticated control, isolation and safe recovery.
+Research authenticated local API control and safe worker recovery; shared capacity tests passed at `fa0b56e`.
