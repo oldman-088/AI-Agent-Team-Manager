@@ -232,12 +232,34 @@ def test_migration_and_readiness(tmp_path, monkeypatch):
                 assert client.delete(f'/api/tasks/{race}/dependencies/{blocker}').status_code == 204
             assert client.delete(f'/api/tasks/{race}').status_code == 204
             assert client.delete(f'/api/tasks/{blocker}').status_code == 204
+            # Agent move and assignment may race, but a mismatched committed association is forbidden.
+            race_agent = client.post('/api/agents', json={'name': 'Race agent', 'role': 'QA', 'project_id': project_id}).json()['id']
+            race_task = client.post('/api/tasks', json={'project_id': project_id, 'title': 'Assignment race'}).json()['id']
+            barrier = Barrier(2)
+            def race_assignment(assign):
+                barrier.wait(timeout=5)
+                with TestClient(create_app(Settings(url)), base_url='http://localhost') as parallel_client:
+                    if assign:
+                        return parallel_client.put(f'/api/tasks/{race_task}/assignment', json={'agent_id': race_agent}).status_code
+                    return parallel_client.patch(f'/api/agents/{race_agent}', json={'project_id': other_project}).status_code
+            with ThreadPoolExecutor(max_workers=2) as pool:
+                assigning = pool.submit(race_assignment, True)
+                moving = pool.submit(race_assignment, False)
+                assignment_code, move_code = assigning.result(timeout=20), moving.result(timeout=20)
+            assert (assignment_code, move_code) in [(200, 409), (422, 200), (409, 200)]
+            current = client.get(f'/api/tasks/{race_task}/assignment').json()['agent_id']
+            agent_project = client.get(f'/api/agents/{race_agent}').json()['project_id']
+            assert current is None or agent_project == project_id
+            assert client.put(f'/api/tasks/{race_task}/assignment', json={'agent_id': None}).status_code == 200
+            assert client.delete(f'/api/tasks/{race_task}').status_code == 204
+            assert client.delete(f'/api/agents/{race_agent}').status_code == 204
             assert client.delete(f'/api/tasks/{other_task}').status_code == 204
             assert client.delete(f'/api/projects/{other_project}').status_code == 204
             assert client.patch(f'/api/tasks/{task_id}', json={'title': 'Updated'}).json()['title'] == 'Updated'
             assert client.patch(f'/api/tasks/{task_id}', json={'status': 'running'}).status_code == 422
             assert client.post(f'/api/tasks/{task_id}/cancel', json={}).json()['status'] == 'cancelled'
-            assert client.put(assignment_url, json={'agent_id': None}).status_code == 409
+            assert client.put(assignment_url, json={'agent_id': None}).status_code == 200
+            assert client.put(assignment_url, json={'agent_id': agent_id}).status_code == 409
             assert client.post(f'/api/tasks/{task_id}/cancel', json={}).json()['status'] == 'cancelled'
             history = client.get(f'/api/events?project_id={project_id}').json()
             assert sum(e['event_type'] == 'task.cancelled' and e['task_id'] == task_id for e in history) == 1

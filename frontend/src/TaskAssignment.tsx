@@ -18,17 +18,19 @@ export function TaskAssignment({task, agents, locale, onChanged}: {task: Task; a
   }, [task.id]);
   const choices = agents.filter(agent => agent.project_id === task.project_id);
   const missing = value && !choices.some(agent => String(agent.id) === value);
-  async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault(); setBusy(true); setError(false);
-    try { await setAssignment(task.id, value ? Number(value) : null); await onChanged(); }
+  async function save(agentId: number | null) {
+    setBusy(true); setError(false);
+    try { await setAssignment(task.id, agentId); setValue(agentId === null ? '' : String(agentId)); await onChanged(); }
     catch { setError(true); }
     finally { setBusy(false); }
   }
+  function submit(event: FormEvent<HTMLFormElement>) { event.preventDefault(); void save(value ? Number(value) : null); }
   return <div><h4>{t.assignment}</h4><p>{t.assignmentHelp}</p>
     {error && <p role="alert">{t.assignmentError}</p>}
-    {loaded && <form onSubmit={submit}><label>{t.selectAgent}<select value={value} onChange={e => setValue(e.target.value)} disabled={busy || task.status !== 'pending'}>
+    {loaded && task.status !== 'pending' && <p>{value ? <>{t.selectAgent}: <bdi>{choices.find(agent => String(agent.id) === value)?.name ?? `${t.assignedMissing} (#${value})`}</bdi> <button disabled={busy} onClick={() => void save(null)}>{t.clearAssignment}</button></> : t.unassigned}</p>}
+    {loaded && task.status === 'pending' && <form onSubmit={submit}><label>{t.selectAgent}<select value={value} onChange={e => setValue(e.target.value)} disabled={busy}>
       <option value="">{t.unassigned}</option>{missing && <option value={value}>{t.assignedMissing} (#{value})</option>}
       {choices.map(agent => <option key={agent.id} value={agent.id}>{agent.name} (#{agent.id})</option>)}
-    </select></label><button disabled={busy || task.status !== 'pending'}>{t.saveAssignment}</button></form>}
+    </select></label><button disabled={busy}>{t.saveAssignment}</button></form>}
   </div>;
 }

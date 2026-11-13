@@ -1,9 +1,9 @@
 {
-  "last_updated_utc": "2026-11-13T18:19:24+00:00",
+  "last_updated_utc": "2026-11-13T18:23:31+00:00",
   "overall_completion_percentage": null,
   "completion_note": "Total project effort completion unknown. The acceptance-criteria indicator is conservative and equally weighted; it is not an estimate of effort or delivery date.",
   "current_phase": "Phases 0–4 and partial Phase 10 in progress",
-  "current_task": "Design safe execution and authenticated audit",
+  "current_task": "Verify terminal unassignment and assignment concurrency in CI",
   "completed_tasks": [
     "Inspected repository, branches, permissions and local tools",
     "Researched candidate repositories and documented preliminary findings",
@@ -41,11 +41,12 @@
     "Added localized recent activity to dashboard",
     "Protected event history from accidental downgrade deletion",
     "Added localized task dependency and readiness panel",
-    "Implemented planning-only manual task assignment and localized UI"
+    "Implemented planning-only manual task assignment and localized UI",
+    "Enabled unassignment of terminal tasks without deleting records"
   ],
   "in_progress_tasks": [
-    "Design authenticated and tamper-resistant audit controls and safe execution",
-    "Expand accessibility and assignment concurrency testing"
+    "Verify PostgreSQL assignment race and browser unassignment",
+    "Design authenticated audit and safe agent execution"
   ],
   "pending_tasks": [
     "Full project and agent management",
@@ -54,20 +55,12 @@
     "Browser sessions and other phases 2–11",
     "Browser end-to-end testing"
   ],
-  "files_created": [
-    "backend/alembic/versions/0008_task_assignments.py",
-    "backend/app/api/assignments.py",
-    "frontend/src/TaskAssignment.tsx"
-  ],
+  "files_created": [],
   "files_modified": [
-    "backend/app/models.py",
-    "backend/app/main.py",
-    "backend/app/api/agents.py",
-    "backend/app/services/activity.py",
+    "backend/app/api/assignments.py",
     "backend/tests/test_foundation.py",
     "backend/README.md",
-    "frontend/src/tasks.ts",
-    "frontend/src/App.tsx",
+    "frontend/src/TaskAssignment.tsx",
     "frontend/src/i18n/messages.ts",
     "frontend/e2e/dashboard.spec.ts",
     "frontend/README.md",
@@ -82,18 +75,18 @@
   "tests_executed": [
     {
       "command": "cd backend && pytest -q",
-      "result": "11 passed on SQLite including project validation, event idempotence, agent deletion/move restrictions and migration guard; Starlette deprecation warning"
+      "result": "11 passed on SQLite including assignment vs agent move concurrency; Starlette deprecation warning"
     },
     {
       "command": "cd frontend && npm run typecheck && npm test && npm run build",
-      "result": "15 tests passed and build passed locally before final copy and E2E changes"
+      "result": "15 passed, frontend build passed"
     },
     {
-      "command": "gh pr checks 4 --watch at 520f0ae",
-      "result": "All passed: PostgreSQL assignment and migration tests, Chromium assignment UI persistence, frontend, prototype matrix, CodeQL"
+      "command": "cd frontend && npm audit --audit-level=high",
+      "result": "0 vulnerabilities"
     }
   ],
-  "build_status": "All PR checks passed at 520f0ae; later commits require their own checks.",
+  "build_status": "PostgreSQL concurrency and Chromium unassignment checks pending",
   "errors_encountered": [
     "Starlette httpx deprecation warning persists"
   ],
@@ -102,13 +95,12 @@
   ],
   "blockers": [
     "No project license selected",
-    "PostgreSQL unavailable locally; assignment checks passed in CI",
-    "Terminal task assignments cannot be edited",
+    "PostgreSQL unavailable locally; new assignment concurrency test needs CI",
     "No authenticated, immutable or complete security audit; no agent execution or production security"
   ],
   "next_actions": [
-    "Design authenticated audit and safe agent execution",
-    "Expand assignment concurrency and accessibility testing"
+    "Verify PostgreSQL and Chromium CI",
+    "Design authenticated audit and safe agent execution"
   ],
   "estimated_remaining_work": "26 of 30 full acceptance criteria remain unverified; duration unknown.",
   "acceptance_criteria_completion_percentage": 13.3,

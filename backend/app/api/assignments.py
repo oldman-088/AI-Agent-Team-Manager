@@ -44,8 +44,8 @@ def set_assignment(task_id: TaskId, data: AssignmentInput, db: Db) -> Assignment
     previous = assignment.agent_id if assignment else None
     if previous == data.agent_id:
         return AssignmentView(task_id=task_id, agent_id=previous)
-    if task.status != 'pending':
-        raise HTTPException(status_code=409, detail='Only pending task assignments can be changed')
+    if task.status != 'pending' and data.agent_id is not None:
+        raise HTTPException(status_code=409, detail='Only pending tasks can receive an assignment')
     if data.agent_id is None:
         if assignment is not None:
             db.delete(assignment)

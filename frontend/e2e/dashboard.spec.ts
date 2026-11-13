@@ -92,4 +92,10 @@ test('manage task dependencies and inspect readiness', async ({page}) => {
   await expect(page.getByText('Ready for manual completion', {exact: true})).toBeVisible();
   await page.getByLabel('Language').selectOption('ar');
   await expect(page.getByText('جاهزة للإكمال اليدوي')).toBeVisible();
+  await page.getByLabel('اللغة').selectOption('en');
+  await section.locator('li').filter({hasText: 'Consumer'}).first().getByRole('button', {name: 'Mark complete manually'}).click();
+  await expect(page.getByRole('button', {name: 'Remove assignment'})).toBeVisible();
+  await page.getByRole('button', {name: 'Remove assignment'}).click();
+  await expect(page.getByRole('button', {name: 'Remove assignment'})).toHaveCount(0);
+  await expect(page.getByRole('region', {name: 'Recent task activity'}).locator('li').first()).toContainText('Task unassigned');
 });
