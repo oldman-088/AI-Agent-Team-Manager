@@ -1,9 +1,9 @@
 {
-  "last_updated_utc": "2026-11-13T18:47:14+00:00",
+  "last_updated_utc": "2026-11-13T18:55:44+00:00",
   "overall_completion_percentage": null,
   "completion_note": "Total project effort completion unknown. The acceptance-criteria indicator is conservative and equally weighted; it is not an estimate of effort or delivery date.",
   "current_phase": "Phases 0–4 and partial Phase 10 in progress",
-  "current_task": "Build authenticated agent lifecycle and safe scheduling",
+  "current_task": "Verify bounded first-run scheduler against PostgreSQL CI",
   "completed_tasks": [
     "Inspected repository, branches, permissions and local tools",
     "Researched candidate repositories and documented preliminary findings",
@@ -46,11 +46,12 @@
     "Added read-only ready-task snapshot and localized dashboard panel",
     "Added opt-in local provider connectivity probe using mocked tests only",
     "Added explicit opt-in local one-shot provider text CLI with mocked tests",
-    "Added manual assigned-task text execution with durable run metadata, mocked tests and run history UI"
+    "Added manual assigned-task text execution with durable run metadata, mocked tests and run history UI",
+    "Added opt-in bounded sequential scheduling for unattempted ready assigned tasks"
   ],
   "in_progress_tasks": [
-    "Design and implement authenticated agent lifecycle and safe scheduling",
-    "Expand real-provider and platform validation where authorized"
+    "Verify scheduler selection, claims and failures on PostgreSQL CI",
+    "Build real worker lifecycle and safe recovery"
   ],
   "pending_tasks": [
     "Full project and agent management",
@@ -60,25 +61,14 @@
     "Browser end-to-end testing"
   ],
   "files_created": [
-    "backend/alembic/versions/0009_task_runs.py",
-    "backend/app/api/task_runs.py",
-    "backend/app/services/task_runs.py",
-    "backend/app/task_worker.py",
-    "backend/tests/test_task_worker_cli.py",
-    "frontend/src/TaskRuns.tsx",
-    "frontend/src/TaskRuns.test.tsx"
+    "backend/app/task_scheduler.py",
+    "backend/tests/test_task_scheduler_cli.py"
   ],
   "files_modified": [
-    "backend/app/models.py",
-    "backend/app/main.py",
-    "backend/app/api/tasks.py",
-    "backend/app/api/agents.py",
+    "backend/app/services/task_runs.py",
+    "backend/app/task_worker.py",
     "backend/tests/test_foundation.py",
     "backend/README.md",
-    "frontend/src/App.tsx",
-    "frontend/src/i18n/messages.ts",
-    "frontend/e2e/dashboard.spec.ts",
-    "frontend/README.md",
     "docs/TECHNICAL_DECISIONS.md",
     "progress/تقرير_التقدم.md",
     "progress/WORKFLOW_REPORT.md",
@@ -90,39 +80,26 @@
   "tests_executed": [
     {
       "command": "cd backend && pytest -q",
-      "result": "21 passed on SQLite including mocked worker, race, uncertainty, resolution and migration guard; Starlette deprecation warning"
-    },
-    {
-      "command": "cd frontend && npm run typecheck && npm test && npm run build",
-      "result": "17 tests and build passed"
-    },
-    {
-      "command": "cd frontend && npm audit --audit-level=high",
-      "result": "0 vulnerabilities"
-    },
-    {
-      "command": "gh pr checks 4 --watch at f103692",
-      "result": "All passed: PostgreSQL migration, mocked worker and competing claims, Chromium, frontend, prototype matrix and CodeQL. No real provider request."
+      "result": "22 passed on SQLite including mocked batch selection, stop-on-error and first-run claim; no live provider call; Starlette deprecation warning"
     }
   ],
-  "build_status": "All PR checks passed at f103692; later commits require their own checks.",
+  "build_status": "PostgreSQL scheduler and full GitHub CI pending",
   "errors_encountered": [
-    "Initial SQLite test exposed partial multi-revision downgrade when later guard raised; test now restores head and documentation warns about SQLite DDL behavior.",
     "Starlette httpx deprecation warning persists."
   ],
   "fixes_implemented": [
-    "Added durable active-run uniqueness, explicit consent, uncertainty and operator resolution; no autonomous retries"
+    "Added locked first-run-only recheck to prevent a selection/claim retry race."
   ],
   "blockers": [
     "No project license selected",
     "No live provider credentials or real network call verified",
-    "No authenticated API, process isolation, autonomous lifecycle or scheduler",
-    "Run history deletion/retention management not implemented"
+    "No authenticated API, global concurrency limits, process isolation, persistent scheduling or budget controls",
+    "Run history retention management not implemented"
   ],
   "next_actions": [
-    "Implement authenticated agent lifecycle and safe scheduling",
-    "Address run retention and execution isolation",
-    "Verify provider only with authorized live credentials and billing consent"
+    "Verify PostgreSQL and GitHub checks",
+    "Build worker lifecycle, safe recovery and execution isolation",
+    "Add actual budget enforcement and authenticated control"
   ],
   "estimated_remaining_work": "26 of 30 full acceptance criteria remain unverified; duration unknown.",
   "acceptance_criteria_completion_percentage": 13.3,

@@ -1,3 +1,3 @@
 # Current task
 
-Implement authenticated agent lifecycle and safe scheduling; address run retention and execution isolation. All PR checks passed at `f103692`; provider calls remain mocked.
+Verify one-shot batch scheduler and locked first-run claims on PostgreSQL CI, then implement worker lifecycle, isolation and safe recovery.

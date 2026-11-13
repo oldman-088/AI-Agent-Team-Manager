@@ -18,6 +18,7 @@ from app.database import make_engine
 from app.main import create_app
 from app.services.task_runs import prepare_run, resolve_run, RunRejected
 from app.task_worker import run_once
+from app.task_scheduler import select_candidates, run_batch
 from app.providers.base import CompletionResult, TokenUsage
 
 BACKEND = Path(__file__).resolve().parents[1]
@@ -329,6 +330,49 @@ def test_migration_and_readiness(tmp_path, monkeypatch, capsys):
             assert client.put(f'/api/tasks/{race_task}/assignment', json={'agent_id': None}).status_code == 200
             assert client.delete(f'/api/tasks/{race_task}').status_code == 204
             assert client.delete(f'/api/agents/{race_agent}').status_code == 204
+            # One-shot scheduler is project scoped, sequential, bounded, and never retries history.
+            batch_project = client.post('/api/projects', json={'name': 'Batch', 'status': 'active'}).json()['id']
+            batch_agent = client.post('/api/agents', json={'name': 'Batch worker', 'role': 'QA', 'project_id': batch_project, 'provider': 'openai', 'model': 'mock-model'}).json()['id']
+            batch_tasks = [client.post('/api/tasks', json={'project_id': batch_project, 'title': title}).json()['id'] for title in ['First', 'Second', 'Third', 'Blocked']]
+            for item in batch_tasks:
+                assert client.put(f'/api/tasks/{item}/assignment', json={'agent_id': batch_agent}).status_code == 200
+            assert client.put(f'/api/tasks/{batch_tasks[3]}/dependencies/{batch_tasks[2]}', json={}).status_code == 204
+            batch_engine = make_engine(url)
+            try:
+                with Session(batch_engine) as session:
+                    assert select_candidates(session, batch_project, 2) == batch_tasks[:2]
+                    assert select_candidates(session, batch_project, 20) == batch_tasks[:3]
+                    assert select_candidates(session, other_project, 20) == []
+                assert client.patch(f'/api/projects/{batch_project}', json={'status': 'paused'}).status_code == 200
+                with Session(batch_engine) as session:
+                    assert select_candidates(session, batch_project, 20) == []
+                    with pytest.raises(RunRejected, match='active'):
+                        prepare_run(session, batch_tasks[0], first_run_only=True, project_id=batch_project)
+                assert client.patch(f'/api/projects/{batch_project}', json={'status': 'active'}).status_code == 200
+                success = CompletionResult('draft', TokenUsage(1, 1))
+                provider = Mock(complete=AsyncMock(side_effect=[success, RuntimeError('private secret'), success]), close=AsyncMock())
+                assert asyncio.run(run_batch(batch_engine, batch_project, 3, 'key', lambda _: provider)) == 1
+                assert provider.complete.await_count == 2
+                assert client.get(f'/api/tasks/{batch_tasks[0]}/runs').json()[0]['status'] == 'succeeded'
+                assert client.get(f'/api/tasks/{batch_tasks[1]}/runs').json()[0]['status'] == 'uncertain'
+                assert client.get(f'/api/tasks/{batch_tasks[2]}/runs').json() == []
+                assert client.get(f'/api/tasks/{batch_tasks[0]}').json()['status'] == 'pending'
+                assert 'private secret' not in capsys.readouterr().err
+                with Session(batch_engine) as session:
+                    assert select_candidates(session, batch_project, 20) == [batch_tasks[2]]
+                assert asyncio.run(run_once(batch_engine, batch_tasks[0], 'key', lambda _: provider, first_run_only=True, project_id=batch_project)) == 2
+                assert provider.complete.await_count == 2
+                assert asyncio.run(run_batch(batch_engine, batch_project, 20, 'key', lambda _: provider)) == 0
+                assert provider.complete.await_count == 3
+                with batch_engine.begin() as connection:
+                    connection.execute(text('DELETE FROM task_runs WHERE task_id IN (SELECT id FROM tasks WHERE project_id = :project_id)'), {'project_id': batch_project})
+            finally:
+                batch_engine.dispose()
+            assert client.delete(f'/api/tasks/{batch_tasks[3]}/dependencies/{batch_tasks[2]}').status_code == 204
+            for item in batch_tasks:
+                assert client.delete(f'/api/tasks/{item}').status_code == 204
+            assert client.delete(f'/api/agents/{batch_agent}').status_code == 204
+            assert client.delete(f'/api/projects/{batch_project}').status_code == 204
             assert client.delete(f'/api/tasks/{other_task}').status_code == 204
             assert client.delete(f'/api/projects/{other_project}').status_code == 204
             assert client.patch(f'/api/tasks/{task_id}', json={'title': 'Updated'}).json()['title'] == 'Updated'

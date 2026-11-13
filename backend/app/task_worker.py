@@ -15,10 +15,10 @@ from app.providers.openai_adapter import OpenAIProvider
 from app.services.task_runs import RunRejected, finish_run, prepare_run, resolve_run
 
 
-async def run_once(engine: Engine, task_id: int, key: str, factory: Callable[[str], Provider]) -> int:
+async def run_once(engine: Engine, task_id: int, key: str, factory: Callable[[str], Provider], *, first_run_only: bool = False, project_id: int | None = None) -> int:
     try:
         with Session(engine) as db:
-            prepared = prepare_run(db, task_id)
+            prepared = prepare_run(db, task_id, first_run_only=first_run_only, project_id=project_id)
     except RunRejected as exc:
         print(str(exc), file=sys.stderr)
         return 2
