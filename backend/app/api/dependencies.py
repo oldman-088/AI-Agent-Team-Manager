@@ -55,6 +55,8 @@ def add_dependency(task_id: TaskId, dependency_id: TaskId, db: Db) -> Response:
         raise HTTPException(status_code=422, detail='Tasks must belong to the same project')
     if db.get(TaskDependency, (task_id, dependency_id)) is not None:
         return Response(status_code=204)
+    if task.status == 'completed':
+        raise HTTPException(status_code=409, detail='Completed task dependencies cannot be changed')
     edges = db.execute(select(TaskDependency.task_id, TaskDependency.depends_on_id)
                        .where(TaskDependency.project_id == task.project_id).limit(MAX_EDGES + 1)).all()
     if len(edges) >= MAX_EDGES:

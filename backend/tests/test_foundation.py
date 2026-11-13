@@ -46,6 +46,23 @@ def test_migration_and_readiness(tmp_path, monkeypatch):
         with engine.begin() as connection:
             row = connection.execute(text('SELECT name, status FROM projects')).one()
             assert row == ('Existing', 'planned')
+        # Exercise the 0005 -> 0006 upgrade with pre-existing tasks and edges.
+        command.downgrade(config, '0005')
+        with engine.begin() as connection:
+            existing_project = connection.execute(text('SELECT id FROM projects')).scalar_one()
+            first_id = connection.execute(text("INSERT INTO tasks (project_id, title) VALUES (:p, 'existing A') RETURNING id"), {'p': existing_project}).scalar_one()
+            second_id = connection.execute(text("INSERT INTO tasks (project_id, title) VALUES (:p, 'existing B') RETURNING id"), {'p': existing_project}).scalar_one()
+            connection.execute(text('INSERT INTO task_dependencies (task_id, depends_on_id, project_id) VALUES (:a, :b, :p)'), {'a': first_id, 'b': second_id, 'p': existing_project})
+        command.upgrade(config, 'head')
+        with engine.begin() as connection:
+            assert connection.execute(text('SELECT COUNT(*) FROM task_dependencies')).scalar_one() == 1
+            connection.execute(text("UPDATE tasks SET status = 'completed' WHERE id = :id"), {'id': second_id})
+        with pytest.raises(RuntimeError, match='Cannot downgrade'):
+            command.downgrade(config, '0005')
+        with engine.begin() as connection:
+            assert connection.execute(text('SELECT COUNT(*) FROM task_dependencies')).scalar_one() == 1
+            connection.execute(text('DELETE FROM task_dependencies'))
+            connection.execute(text('DELETE FROM tasks'))
         command.downgrade(config, '0001')
         with engine.begin() as connection:
             assert connection.execute(text('SELECT name FROM projects')).scalar_one() == 'Existing'
@@ -138,6 +155,51 @@ def test_migration_and_readiness(tmp_path, monkeypatch):
                     assert client.delete(f'/api/tasks/{source}/dependencies/{target}').status_code == 204
             assert client.delete(f'/api/tasks/{second}').status_code == 204
             assert client.delete(f'/api/tasks/{third}').status_code == 204
+            # A pending prerequisite blocks manual completion until explicitly completed.
+            lead = client.post('/api/tasks', json={'project_id': project_id, 'title': 'Lead'}).json()['id']
+            prerequisite = client.post('/api/tasks', json={'project_id': project_id, 'title': 'Prerequisite'}).json()['id']
+            assert client.put(f'/api/tasks/{lead}/dependencies/{prerequisite}', json={}).status_code == 204
+            assert client.get(f'/api/tasks/{lead}/readiness').json() == {'task_id': lead, 'ready': False, 'status': 'pending', 'blocking_dependencies': [prerequisite]}
+            assert client.post(f'/api/tasks/{lead}/complete', json={}).status_code == 409
+            assert client.post(f'/api/tasks/{prerequisite}/complete', json={}).json()['status'] == 'completed'
+            assert client.post(f'/api/tasks/{prerequisite}/cancel', json={}).status_code == 409
+            assert client.get(f'/api/tasks/{lead}/readiness').json()['ready'] is True
+            assert client.post(f'/api/tasks/{lead}/complete', json={}).json()['status'] == 'completed'
+            assert client.post(f'/api/tasks/{lead}/complete', json={}).status_code == 200
+            assert client.get(f'/api/tasks/{lead}/readiness').json()['ready'] is False
+            assert client.put(f'/api/tasks/{lead}/dependencies/{task_id}', json={}).status_code == 409
+            assert client.delete(f'/api/tasks/{lead}/dependencies/{prerequisite}').status_code == 204
+            assert client.delete(f'/api/tasks/{lead}').status_code == 204
+            assert client.delete(f'/api/tasks/{prerequisite}').status_code == 204
+            blocked = client.post('/api/tasks', json={'project_id': project_id, 'title': 'Blocked'}).json()['id']
+            cancelled = client.post('/api/tasks', json={'project_id': project_id, 'title': 'Cancelled'}).json()['id']
+            assert client.put(f'/api/tasks/{blocked}/dependencies/{cancelled}', json={}).status_code == 204
+            assert client.post(f'/api/tasks/{cancelled}/cancel', json={}).status_code == 200
+            assert client.post(f'/api/tasks/{cancelled}/complete', json={}).status_code == 409
+            assert client.get(f'/api/tasks/{blocked}/readiness').json()['blocking_dependencies'] == [cancelled]
+            assert client.post(f'/api/tasks/{blocked}/complete', json={}).status_code == 409
+            assert client.delete(f'/api/tasks/{blocked}/dependencies/{cancelled}').status_code == 204
+            assert client.delete(f'/api/tasks/{blocked}').status_code == 204
+            assert client.delete(f'/api/tasks/{cancelled}').status_code == 204
+            # Completion and dependency insertion must be serialized.
+            race = client.post('/api/tasks', json={'project_id': project_id, 'title': 'Race'}).json()['id']
+            blocker = client.post('/api/tasks', json={'project_id': project_id, 'title': 'Blocker'}).json()['id']
+            barrier = Barrier(2)
+            def race_action(complete):
+                barrier.wait(timeout=5)
+                with TestClient(create_app(Settings(url)), base_url='http://localhost') as parallel_client:
+                    if complete:
+                        return parallel_client.post(f'/api/tasks/{race}/complete', json={}).status_code
+                    return parallel_client.put(f'/api/tasks/{race}/dependencies/{blocker}', json={}).status_code
+            with ThreadPoolExecutor(max_workers=2) as pool:
+                completion = pool.submit(race_action, True)
+                insertion = pool.submit(race_action, False)
+                completion_code, insertion_code = completion.result(timeout=20), insertion.result(timeout=20)
+            assert (completion_code, insertion_code) in [(200, 409), (409, 204)]
+            if insertion_code == 204:
+                assert client.delete(f'/api/tasks/{race}/dependencies/{blocker}').status_code == 204
+            assert client.delete(f'/api/tasks/{race}').status_code == 204
+            assert client.delete(f'/api/tasks/{blocker}').status_code == 204
             assert client.delete(f'/api/tasks/{other_task}').status_code == 204
             assert client.delete(f'/api/projects/{other_project}').status_code == 204
             assert client.patch(f'/api/tasks/{task_id}', json={'title': 'Updated'}).json()['title'] == 'Updated'

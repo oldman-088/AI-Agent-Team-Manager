@@ -1,3 +1,3 @@
 # Current task
 
-Design dependency-aware scheduling and safe agent execution. All PR checks passed at `abe66ee`.
+Verify manual completion, migration and concurrency on PostgreSQL and browser CI, then design safe automated execution.

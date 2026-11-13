@@ -2,10 +2,10 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { fetchHealth, type Health } from './health';
 import { createProject, listProjects, type Project } from './projects';
 import { createAgent, listAgents, type Agent } from './agents';
-import { createTask, listTasks, type Task } from './tasks';
+import { completeTask, createTask, listTasks, type Task } from './tasks';
 import { direction, messages, statusLabel, type Locale } from './i18n/messages';
 
-type ErrorKey = 'loadError' | 'projectError' | 'agentError' | 'taskError';
+type ErrorKey = 'loadError' | 'projectError' | 'agentError' | 'taskError' | 'completeError';
 
 export function App() {
   const [locale, setLocale] = useState<Locale>('en');
@@ -25,6 +25,7 @@ export function App() {
   const [saving, setSaving] = useState(false);
   const [savingAgent, setSavingAgent] = useState(false);
   const [savingTask, setSavingTask] = useState(false);
+  const [completingId, setCompletingId] = useState<number | null>(null);
 
   useEffect(() => {
     document.documentElement.lang = locale;
@@ -64,6 +65,13 @@ export function App() {
     finally { setSavingTask(false); }
   }
 
+  async function finishTask(id: number) {
+    setCompletingId(id); setError(null);
+    try { await completeTask(id); await refresh(); }
+    catch { setError('completeError'); }
+    finally { setCompletingId(null); }
+  }
+
   return <main>
     <header>
       <label className="language">{t.language}<select value={locale} onChange={e => setLocale(e.target.value as Locale)}>
@@ -93,13 +101,13 @@ export function App() {
       </form>
       {agents.length ? <ul>{agents.map(agent => <li key={agent.id}><strong><bdi>{agent.name}</bdi></strong> · <bdi>{agent.role}</bdi> — {t.noExecution}</li>)}</ul> : <p>{t.noAgents}</p>}
     </section>
-    <section aria-labelledby="tasks-heading"><h2 id="tasks-heading">{t.tasks}</h2><p>{t.tasksHelp}</p>
+    <section aria-labelledby="tasks-heading"><h2 id="tasks-heading">{t.tasks}</h2><p>{t.tasksHelp}</p><p>{t.completeHelp}</p>
       <form onSubmit={submitTask}>
         <label>{t.project}<select required value={taskProject} onChange={e => setTaskProject(e.target.value)}><option value="">{t.selectProject}</option>{projects.map(project => <option key={project.id} value={project.id}>{project.name}</option>)}</select></label>
         <label>{t.taskTitle}<input dir="auto" value={taskTitle} onChange={e => setTaskTitle(e.target.value)} required maxLength={200} /></label>
         <button disabled={savingTask || health !== 'ready' || !projects.length}>{savingTask ? t.saving : t.createTask}</button>
       </form>
-      {tasks.length ? <ul>{tasks.map(task => <li key={task.id}><strong><bdi>{task.title}</bdi></strong> · {statusLabel(locale, task.status)} · <bdi>{projects.find(project => project.id === task.project_id)?.name ?? `#${task.project_id}`}</bdi></li>)}</ul> : <p>{t.noTasks}</p>}
+      {tasks.length ? <ul>{tasks.map(task => <li key={task.id}><strong><bdi>{task.title}</bdi></strong> · {statusLabel(locale, task.status)} · <bdi>{projects.find(project => project.id === task.project_id)?.name ?? `#${task.project_id}`}</bdi>{task.status === 'pending' && <button className="task-action" disabled={completingId !== null} onClick={() => void finishTask(task.id)}>{t.manualComplete}</button>}</li>)}</ul> : <p>{t.noTasks}</p>}
     </section>
     <section><h2>{t.underConstruction}</h2><p>{t.limitations}</p></section>
   </main>;

@@ -1,21 +1,21 @@
 # Workflow report
 
-Last updated: 2026-11-13T17:42:40+00:00
+Last updated: 2026-11-13T17:45:31+00:00
 
 ## Completion indicator
 
-**13.3% of acceptance criteria verified**: 4 of 30 equally weighted binary criteria (2–5). Partial criteria receive zero. This is not an effort or delivery-time estimate. See [Arabic progress report](تقرير_التقدم.md). Task dependencies are not counted as fully verified because dependency-aware scheduling and full task execution are still absent.
+**13.3% of acceptance criteria verified**: 4 of 30 equally weighted binary criteria (2–5). Partial criteria receive zero. This is not an effort or delivery-time estimate. See [Arabic progress report](تقرير_التقدم.md). Dependency criterion remains uncounted while automated execution/scheduling is absent.
 
 ## Current work
 
-Implemented a project-scoped dependency graph API with database foreign keys, self/cross-project and cycle rejection, bounded graph size, protected deletion, and serialized graph changes. PostgreSQL uses a project row lock; SQLite uses an immediate write transaction. Only API-mediated changes are cycle-checked; direct SQL can bypass application-level cycle prevention. Scheduling and execution remain unimplemented.
+Added dependency-aware readiness snapshots and explicit user-asserted manual completion. Completion rechecks dependencies under the project lock; cancelled dependencies block completion. Completed tasks cannot gain dependencies or be cancelled. This does not claim an agent ran or provide audit evidence. Migration 0006 refuses to downgrade while completed tasks exist. The dashboard supports manual completion; dependency editing remains API-only.
 
 ## Verification
 
-- Backend: 11 tests passed locally on SQLite, including migration, cross-project foreign keys, cycle detection, deletion protection and simultaneous opposing edge edits. Starlette and Pydantic warnings observed.
-- Frontend: typecheck, 12 tests and production build passed. At `abe66ee`, all PR checks passed: [PostgreSQL graph and concurrency tests](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43475288767), [browser E2E](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43475288419), [frontend](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43475288186), [prototype matrix](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43475288318), and [CodeQL](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43475288283). Newer commits require their own checks.
-- Earlier PR checks at `813fd31` passed, including Chromium E2E and PostgreSQL. Later commits need their own checks.
+- Backend: 11 tests passed locally using SQLite, covering existing-data migration, downgrade safety, readiness, cancellation and completion vs dependency-insertion race. Starlette httpx deprecation warning remains.
+- Frontend: typecheck, 12 tests and production build passed. New browser E2E and PostgreSQL checks are pending.
+- Previous dependency CI passed at `abe66ee`; current changes require their own checks.
 
 ## Blockers and next actions
 
-PostgreSQL unavailable locally; graph and concurrent-edit tests passed in CI. No project license selected. Live provider use, secret storage, scheduling, agent execution and most platform capabilities remain incomplete. See JSON report for file inventory; duration unknown.
+PostgreSQL is unavailable locally. Verify its CI tests and browser E2E; then design actual scheduling and agent execution with audit and security controls. No project license selected. Most requested platform capabilities remain incomplete; duration unknown. See JSON report for file inventory.

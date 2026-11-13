@@ -20,3 +20,7 @@ Adopt the official OpenAI Python SDK behind a small asynchronous text-completion
 ## 2026-11-13: Task dependencies as planning data
 
 Implement same-project dependency edges with database-enforced membership and an explicit 10,000-edge per-project limit. Serialize graph changes per project via PostgreSQL row locks; SQLite uses a database-level immediate write transaction. Reject cyclic and self dependencies and refuse deletion of referenced tasks. API graph edits are serialized, but arbitrary direct SQL can bypass the cycle check. No automatic scheduling, ready-state derivation or execution is implied. Tests cover opposing concurrent edits; PostgreSQL CI verification is required separately.
+
+## 2026-11-13: Manual task completion and readiness
+
+A human may explicitly mark a task completed after its direct dependencies are completed. This records no execution, identity, evidence or review and must not be presented as an agent action. Readiness is informational; completion checks again while holding the same lock used for dependency edits. Cancelled prerequisites block completion. Completed tasks cannot acquire new dependencies or be cancelled. Removing an edge remains permitted for cleanup; this is not an audit trail. Downgrading the new state constraint refuses to rewrite completed rows.

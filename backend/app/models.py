@@ -30,7 +30,7 @@ class Agent(Base):
 
 class Task(Base):
     __tablename__ = 'tasks'
-    __table_args__ = (CheckConstraint("status IN ('pending', 'cancelled')", name='ck_tasks_status'), Index('uq_tasks_id_project_id', 'id', 'project_id', unique=True))
+    __table_args__ = (CheckConstraint("status IN ('pending', 'cancelled', 'completed')", name='ck_tasks_status'), Index('uq_tasks_id_project_id', 'id', 'project_id', unique=True))
     id: Mapped[int] = mapped_column(primary_key=True)
     project_id: Mapped[int] = mapped_column(ForeignKey('projects.id', ondelete='RESTRICT'), nullable=False, index=True)
     title: Mapped[str] = mapped_column(String(200), nullable=False)

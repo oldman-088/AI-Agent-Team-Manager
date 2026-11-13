@@ -133,4 +133,11 @@ class TaskView(BaseModel):
     project_id: int
     title: str
     description: str
-    status: Literal['pending', 'cancelled']
+    status: Literal['pending', 'cancelled', 'completed']
+
+
+class TaskReadiness(BaseModel):
+    task_id: int
+    ready: bool
+    status: Literal['pending', 'cancelled', 'completed']
+    blocking_dependencies: list[int]

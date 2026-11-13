@@ -1,9 +1,9 @@
 {
-  "last_updated_utc": "2026-11-13T17:42:40+00:00",
+  "last_updated_utc": "2026-11-13T17:45:31+00:00",
   "overall_completion_percentage": null,
   "completion_note": "Total project effort completion unknown. The acceptance-criteria indicator is conservative and equally weighted; it is not an estimate of effort or delivery date.",
   "current_phase": "Phases 0–4 and partial Phase 10 in progress",
-  "current_task": "Design dependency-aware scheduling and safe agent execution",
+  "current_task": "Validate manual task completion and readiness on PostgreSQL and browser CI",
   "completed_tasks": [
     "Inspected repository, branches, permissions and local tools",
     "Researched candidate repositories and documented preliminary findings",
@@ -33,11 +33,14 @@
     "Added browser CI workflow",
     "Added same-project task dependency API and database constraints",
     "Added cycle detection, serialized graph edits, and concurrent-edit tests",
-    "Protected dependent tasks from accidental deletion"
+    "Protected dependent tasks from accidental deletion",
+    "Added dependency-aware readiness and explicitly manual task completion",
+    "Added concurrency checks for completion vs dependency insertion",
+    "Added manual completion UI and safe migration with downgrade protection"
   ],
   "in_progress_tasks": [
-    "Design dependency-aware scheduling and safe execution",
-    "Expand browser and accessibility validation"
+    "Verify PostgreSQL migration, concurrent edits and browser E2E in GitHub Actions",
+    "Design automatic scheduling and safe agent execution"
   ],
   "pending_tasks": [
     "Full project and agent management",
@@ -47,17 +50,21 @@
     "Browser end-to-end testing"
   ],
   "files_created": [
-    "backend/alembic/versions/0005_task_dependencies.py",
-    "backend/app/api/dependencies.py"
+    "backend/alembic/versions/0006_manual_completion.py"
   ],
   "files_modified": [
     "backend/app/models.py",
-    "backend/app/main.py",
+    "backend/app/schemas.py",
     "backend/app/api/tasks.py",
+    "backend/app/api/dependencies.py",
     "backend/tests/test_foundation.py",
     "backend/README.md",
+    "frontend/src/tasks.ts",
+    "frontend/src/App.tsx",
+    "frontend/src/style.css",
     "frontend/src/i18n/messages.ts",
-    "docs/ROADMAP.md",
+    "frontend/e2e/dashboard.spec.ts",
+    "frontend/README.md",
     "docs/TECHNICAL_DECISIONS.md",
     "progress/تقرير_التقدم.md",
     "progress/WORKFLOW_REPORT.md",
@@ -70,7 +77,7 @@
   "tests_executed": [
     {
       "command": "cd backend && pytest -q",
-      "result": "11 passed locally on SQLite, including migration, cross-project database constraints and simultaneous opposing graph edits; Starlette and Pydantic warnings observed"
+      "result": "11 passed locally on SQLite including migration preservation, downgrade guard, readiness, cancellation, and concurrent completion/dependency edits; Starlette warning"
     },
     {
       "command": "cd frontend && npm run typecheck && npm test && npm run build",
@@ -78,31 +85,27 @@
     },
     {
       "command": "git diff --check",
-      "result": "Passed before commit"
+      "result": "Passed before report update"
     },
     {
-      "command": "Previous PR checks on 813fd31",
-      "result": "All passed, including isolated browser E2E and PostgreSQL; new changes require CI."
-    },
-    {
-      "command": "GitHub Actions PR checks at abe66ee",
-      "result": "All passed including PostgreSQL dependency migration, concurrent opposing edges, browser E2E, frontend, prototype matrix and CodeQL"
+      "command": "Previous PR checks at b824c74",
+      "result": "Prior dependency changes passed; current work needs CI"
     }
   ],
-  "build_status": "All PR checks passed at abe66ee; newer commits require their own checks.",
+  "build_status": "Frontend build passed locally; new PostgreSQL and browser checks pending.",
   "errors_encountered": [
-    "Starlette httpx deprecation and Pydantic unsupported field attribute warnings observed."
+    "Starlette httpx deprecation warning"
   ],
   "fixes_implemented": [],
   "blockers": [
     "No project license selected",
-    "PostgreSQL unavailable locally; dependency concurrency verified in CI",
-    "Dependency-aware scheduling, live provider use, authentication, agent execution and most platform capabilities remain unimplemented"
+    "PostgreSQL unavailable locally; new migration and concurrency tests require CI validation",
+    "Agent execution, authentication, automatic scheduling and most platform capabilities remain unimplemented"
   ],
   "next_actions": [
-    "Design dependency-aware scheduling and safe agent execution",
-    "Expand E2E and accessibility validation",
-    "Lock and audit Python dependencies"
+    "Verify new GitHub Actions checks",
+    "Design safe agent execution and automatic scheduling",
+    "Add audit history and access controls"
   ],
   "estimated_remaining_work": "26 of 30 full acceptance criteria remain unverified; duration unknown.",
   "acceptance_criteria_completion_percentage": 13.3,

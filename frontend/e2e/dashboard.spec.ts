@@ -50,4 +50,6 @@ test('create records and switch language with RTL and keyboard access', async ({
   await page.getByLabel('زبان').selectOption('en');
   await expect(page.locator('html')).toHaveAttribute('dir', 'ltr');
   await expect(projectSection.locator('li')).toContainText('مشروع AATM');
+  await taskSection.getByRole('button', {name: 'Mark complete manually'}).click();
+  await expect(taskSection.locator('li')).toContainText('Completed');
 });

@@ -1,12 +1,13 @@
 """Project planning tasks; no agent execution or scheduling yet."""
 from typing import Annotated
 from fastapi import APIRouter, HTTPException, Path, Query, Response
-from sqlalchemy import select, update
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 
 from app.api.projects import Db
-from app.models import Project, Task
-from app.schemas import TaskCreate, TaskUpdate, TaskView
+from app.api.dependencies import lock_project
+from app.models import Project, Task, TaskDependency
+from app.schemas import TaskCreate, TaskReadiness, TaskUpdate, TaskView
 
 router = APIRouter(prefix='/api/tasks', tags=['tasks'])
 TaskId = Annotated[int, Path(ge=1, le=2147483647)]
@@ -59,12 +60,47 @@ def update_task(task_id: TaskId, data: TaskUpdate, db: Db) -> Task:
     return task
 
 
+def blocking_dependencies(db: Db, task_id: int) -> list[int]:
+    return list(db.scalars(
+        select(Task.id).join(TaskDependency, TaskDependency.depends_on_id == Task.id)
+        .where(TaskDependency.task_id == task_id, Task.status != 'completed').order_by(Task.id)
+    ))
+
+
+@router.get('/{task_id}/readiness', response_model=TaskReadiness)
+def task_readiness(task_id: TaskId, db: Db) -> TaskReadiness:
+    # Snapshot for display only; complete_task rechecks under the project lock.
+    task = find_task(db, task_id)
+    blockers = blocking_dependencies(db, task_id)
+    return TaskReadiness(task_id=task.id, status=task.status, ready=task.status == 'pending' and not blockers, blocking_dependencies=blockers)
+
+
+@router.post('/{task_id}/complete', response_model=TaskView)
+def complete_task(task_id: TaskId, db: Db) -> Task:
+    # A human asserts completion; this does not claim an agent ran or verify work.
+    task = lock_project(db, task_id)
+    if task.status == 'cancelled':
+        raise HTTPException(status_code=409, detail='Cancelled task cannot be completed')
+    if task.status == 'completed':
+        return task
+    if blocking_dependencies(db, task_id):
+        raise HTTPException(status_code=409, detail='Dependencies are not completed')
+    task.status = 'completed'
+    db.commit()
+    db.refresh(task)
+    return task
+
+
 @router.post('/{task_id}/cancel', response_model=TaskView)
 def cancel_task(task_id: TaskId, db: Db) -> Task:
-    # Idempotent state transition; no external execution is stopped by this operation.
-    db.execute(update(Task).where(Task.id == task_id, Task.status == 'pending').values(status='cancelled'))
-    db.commit()
-    return find_task(db, task_id)
+    task = lock_project(db, task_id)
+    if task.status == 'completed':
+        raise HTTPException(status_code=409, detail='Completed task cannot be cancelled')
+    if task.status == 'pending':
+        task.status = 'cancelled'
+        db.commit()
+        db.refresh(task)
+    return task
 
 
 @router.delete('/{task_id}', status_code=204)
