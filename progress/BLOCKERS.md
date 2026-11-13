@@ -1,7 +1,6 @@
 # Blockers and limitations
 
 - No project license selected.
-- Live provider authentication and integration not verified; no credentials used.
-- Chromium unavailable locally; actual browser RTL, keyboard and screen-reader validation not performed.
-- Agent execution, authentication, task dependencies and most platform capabilities are incomplete.
-- Python dependency locking and full platform validation remain outstanding.
+- Chromium is unavailable locally; isolated browser CI execution is pending.
+- Live provider verification, agent execution, authentication, task dependencies and most platform capabilities remain incomplete.
+- Full RTL, accessibility, Windows and Python dependency validation remain outstanding.

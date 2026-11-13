@@ -1,9 +1,9 @@
 {
-  "last_updated_utc": "2026-11-13T17:11:54+00:00",
+  "last_updated_utc": "2026-11-13T17:14:37+00:00",
   "overall_completion_percentage": null,
   "completion_note": "Total project effort completion unknown. The acceptance-criteria indicator is conservative and equally weighted; it is not an estimate of effort or delivery date.",
   "current_phase": "Phases 0–4 and partial Phase 10 in progress",
-  "current_task": "Real-browser RTL/accessibility validation and secure execution design",
+  "current_task": "Verify Playwright E2E workflow in GitHub Actions",
   "completed_tasks": [
     "Inspected repository, branches, permissions and local tools",
     "Researched candidate repositories and documented preliminary findings",
@@ -28,10 +28,13 @@
     "Audited local Python environment and upgraded vulnerable tooling",
     "Translated current dashboard to English, Arabic and Persian",
     "Added document language, RTL direction and bidirectional text isolation",
-    "Added DOM tests for language switching and errors"
+    "Added DOM tests for language switching and errors",
+    "Added isolated temporary SQLite E2E server and Playwright dashboard test",
+    "Added browser CI workflow"
   ],
   "in_progress_tasks": [
-    "Validate real-browser layout and accessibility",
+    "Verify browser workflow in CI",
+    "Validate broader RTL and accessibility behavior",
     "Implement secure credential management and safe execution"
   ],
   "pending_tasks": [
@@ -42,18 +45,17 @@
     "Browser end-to-end testing"
   ],
   "files_created": [
-    "frontend/src/App.tsx",
-    "frontend/src/App.test.tsx",
-    "frontend/src/i18n/messages.ts",
-    "frontend/src/i18n/messages.test.ts"
+    "backend/e2e_server.py",
+    "frontend/vitest.config.ts",
+    "frontend/playwright.config.ts",
+    "frontend/e2e/dashboard.spec.ts",
+    ".github/workflows/browser-e2e.yml"
   ],
   "files_modified": [
-    "frontend/src/main.tsx",
-    "frontend/src/style.css",
     "frontend/package.json",
     "frontend/package-lock.json",
+    "frontend/vite.config.ts",
     "frontend/README.md",
-    "docs/ROADMAP.md",
     "progress/تقرير_التقدم.md",
     "progress/WORKFLOW_REPORT.md",
     "progress/WORKFLOW_REPORT.json",
@@ -65,41 +67,45 @@
   "tests_executed": [
     {
       "command": "cd frontend && npm run typecheck && npm test && npm run build",
-      "result": "Passed; 12 tests, including jsdom language/direction tests; production build passed"
+      "result": "Passed, 12 tests and production build"
     },
     {
       "command": "cd frontend && npm audit --audit-level=high",
       "result": "Zero vulnerabilities"
     },
     {
-      "command": "cd backend && pytest -q",
-      "result": "11 passed; one Starlette httpx deprecation warning"
+      "command": "cd frontend && npx playwright test --list",
+      "result": "1 E2E test discovered; not a test execution"
+    },
+    {
+      "command": "cd frontend && npm run test:e2e",
+      "result": "Failed locally: Chromium executable not installed; disposable backend and frontend started"
+    },
+    {
+      "command": "python -m pip install -e backend[test]",
+      "result": "Passed in local virtual environment"
     },
     {
       "command": "python scripts/check_docs.py; git diff --check",
       "result": "Passed before report update"
-    },
-    {
-      "command": "GitHub Actions PR checks at 1799a05",
-      "result": "All passed: frontend typecheck, DOM tests, build, PostgreSQL backend, prototype matrix and CodeQL"
     }
   ],
-  "build_status": "All PR checks passed at 1799a05; later commits require their own checks.",
+  "build_status": "Local frontend build passed; new GitHub Actions browser test pending.",
   "errors_encountered": [
-    "First DOM test failed because test text appeared in several elements; changed test to accept multiple expected matches.",
-    "Starlette httpx deprecation warning remains."
+    "Initial E2E attempt used incorrect virtualenv PATH and could not import uvicorn.",
+    "Second E2E attempt started servers but failed because Chromium was not installed locally."
   ],
   "fixes_implemented": [
-    "Corrected DOM query and reran all 12 frontend tests successfully."
+    "Corrected virtualenv PATH; browser binary remains unavailable locally. CI installs Chromium."
   ],
   "blockers": [
     "No project license selected",
-    "Live provider authentication and integration not verified",
-    "Real-browser RTL/accessibility validation, agent execution, authentication and most platform features remain unimplemented"
+    "No local Chromium; E2E CI result pending",
+    "Live provider authentication, secure execution, full accessibility testing and most platform features remain incomplete"
   ],
   "next_actions": [
-    "Verify GitHub Actions",
-    "Test translated UI in a real browser and review RTL/accessibility",
+    "Inspect and fix browser CI results",
+    "Expand accessibility, isolation and platform testing",
     "Implement secure credentials and safe agent execution"
   ],
   "estimated_remaining_work": "26 of 30 full acceptance criteria remain unverified; duration unknown.",

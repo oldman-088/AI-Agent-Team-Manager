@@ -1,3 +1,3 @@
 # Current task
 
-Perform real-browser RTL and accessibility testing, and continue secure credential and execution design. All PR checks passed at `1799a05`.
+Verify isolated Playwright browser E2E in GitHub Actions and address any failures; continue secure execution and credential design.
