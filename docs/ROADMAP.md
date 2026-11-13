@@ -1,0 +1,18 @@
+# Roadmap and acceptance
+
+The master specification supplied by the user is the authoritative requirements source. Overall completion is unknown; no weighted estimate is credible until the full scope is decomposed into verifiable tasks.
+
+- Phase 0 — **In Progress**: research, architectural baseline, CI, issue/milestone planning. CI must actually run before verification. Research is preliminary, not a full security or license audit.
+- Phase 1 — **Not Started**: FastAPI, React/TypeScript, PostgreSQL, configuration, health and Alembic. Acceptance: documented startup, migrations and automated integration tests against PostgreSQL.
+- Phase 2 — **Not Started**: registry, lifecycle and heartbeat. Acceptance: states reflect real processes; stale-heartbeat recovery tests.
+- Phase 3 — **Not Started**: provider interfaces and at least one real provider; credentials protected, real integration tested separately.
+- Phase 4 — **Not Started**: durable coordination, dependencies and safe execution.
+- Phase 5 — **Not Started**: isolated Playwright sessions and persistent profiles.
+- Phase 6 — **Not Started**: projects and authorized GitHub integration.
+- Phase 7 — **Not Started**: scoped shared memory.
+- Phase 8 — **Not Started**: QA and recovery.
+- Phase 9 — **Not Started**: monitoring, approvals and security.
+- Phase 10 — **Not Started**: full UI, English/Arabic/Persian and RTL.
+- Phase 11 — **Not Started**: end-to-end, security, performance, Windows and Ubuntu validation, release.
+
+See the master specification for complete acceptance criteria. The existing prototype is not a substitute for these phases.

@@ -2,3 +2,10 @@ __pycache__/
 *.py[cod]
 *.sqlite3
 *.sqlite3-*
+.env
+.env.*
+!.env.example
+node_modules/
+.venv/
+playwright-report/
+test-results/

@@ -33,3 +33,7 @@ python -m compileall -q team_manager tests
 ## Limitations and next steps
 
 No agent execution, LLM integration, workflow engine, integrations, authentication, collaboration, task editing beyond status and assignment, versioned migrations, or production deployment configuration exists. Product requirements and acceptance criteria are needed before those capabilities can be designed and verified. See `progress/WORKFLOW_REPORT.md` for the current checkpoint.
+
+## Project direction
+
+The supplied AATM master specification defines the intended platform; this prototype implements only a small local task tracker, not that platform. See [architecture](docs/ARCHITECTURE.md), [research](docs/RESEARCH.md), [decisions](docs/TECHNICAL_DECISIONS.md), and [roadmap](docs/ROADMAP.md). CI currently validates the prototype only; the planned React frontend, PostgreSQL and integrations do not yet exist.
