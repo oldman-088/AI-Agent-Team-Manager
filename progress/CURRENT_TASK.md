@@ -1,3 +1,3 @@
 # Current task
 
-Verify ready-task query and dashboard on PostgreSQL and Chromium CI; then design authenticated audit and safe execution.
+Design authenticated audit and safe agent execution; expand accessibility and concurrency coverage. Ready-task checks passed at `9b14e10`.
