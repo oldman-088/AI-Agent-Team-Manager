@@ -1,6 +1,6 @@
 # Workflow report
 
-Last updated: 2026-11-13T18:31:16+00:00
+Last updated: 2026-11-13T18:33:06+00:00
 
 ## Completion indicator
 
@@ -35,3 +35,7 @@ Assignments can now be removed from completed or cancelled tasks without deletin
 ## Ready planning task snapshot checkpoint
 
 Added a read-only ready task query with project and assignment filters and bounded offset pagination, plus localized dashboard display. It is a snapshot, not an execution queue or reservation; completion rechecks under the project lock. SQLite backend tests (11), frontend typecheck, 16 tests and build passed locally; npm audit zero vulnerabilities. Initial browser CI failed because the existing test matched both similarly named regions; using the exact accessible name fixed it. All PR checks passed at `9b14e10`: [PostgreSQL](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43483208968), [Chromium](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43483209198), [frontend](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43483208920), [prototype matrix](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43483208470) and [CodeQL](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43483208450). Later commits need separate verification. Acceptance remains 4/30.
+
+## Provider connectivity probe checkpoint
+
+Moved from planning to a local, explicitly confirmed, potentially billable OpenAI probe. The CLI uses a fixed prompt, output limit, no retries, official API base URL and sanitized output; no HTTP paid endpoint is exposed. Backend tests: 15 passed on SQLite with mocks; no real credentials or live call. GitHub CI pending. This is not task execution or provider validation; return to planning improvements later. Acceptance remains 4/30.

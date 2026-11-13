@@ -43,3 +43,13 @@ This is **not** a security audit log: it has no authenticated actor, immutable s
 ## Ready planning tasks
 
 `GET /api/tasks/ready` returns a paginated snapshot of pending tasks whose direct prerequisites are all completed. A cancelled or pending prerequisite blocks readiness; a task without prerequisites is ready. Optional `project_id` scopes the result, and `assigned_only=true` restricts it to tasks with a planning assignment. Results are ordered by task ID, with `limit` 1–100 (default 100) and `offset` 0–1000000. Offset pagination can shift under concurrent changes. The result is informational: it is not a claim, reservation, queue, worker, execution authorization, or proof of work; it can be stale immediately. Manual completion rechecks dependencies while holding the project lock.
+
+## Optional, billable OpenAI connectivity probe
+
+The local CLI is deliberately **not an API endpoint**: this application has no authentication, so exposing a billable remote call over its HTTP interface would be unsafe. To run it yourself, supply `OPENAI_API_KEY` through your local process environment (never as a command argument, in Git, or in a ticket), then from `backend` run:
+
+```sh
+python -m app.provider_probe --model YOUR_MODEL_ID --confirm-billable
+```
+
+The model ID must be available to your account. This sends the fixed prompt “Reply with the single word OK.” to OpenAI and may incur charges; the explicit flag is required. The request is limited to 32 output tokens, has a 30-second SDK timeout, no automatic retries, no tools and `store=false`. `store=false` does not guarantee zero provider retention. The SDK is configured with the official OpenAI API base URL rather than accepting `OPENAI_BASE_URL`; trusted proxy, certificate and SDK logging environment configuration still matters. Do not enable verbose HTTP/SDK logs with production credentials. No result text or credential is deliberately printed or persisted by this command; token counts may be printed if provided. Errors are sanitized. This is not a task execution or provider integration with the dashboard. It has only been tested with mocks; no live request was made, so real network connectivity, account permissions, model availability, billing and actual provider behavior are unverified.

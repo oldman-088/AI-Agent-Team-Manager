@@ -36,3 +36,7 @@ Use a separate one-per-task assignment table with composite project-scoped forei
 ## 2026-11-13: Read-only ready-task snapshot
 
 A single database query lists pending tasks without incomplete direct prerequisites; project and assignment filters and bounded pagination are available. This is advisory and does not claim, lock or schedule tasks. Offset pages can shift during concurrent writes and the list may be stale immediately. Manual completion retains its independent project-locked check. A reliable future worker scheduler will require transactional claims, leases, recovery and authorization rather than using this list as a queue.
+
+## 2026-11-13: Explicit local provider connectivity probe
+
+Use the official SDK adapter behind a one-shot local CLI with a fixed non-sensitive prompt, explicit model and billable-operation acknowledgement. Reject missing key/confirmation before client creation; cap output, disable retries and request storage, close the client and sanitize output/errors. Fix the SDK base URL to the official OpenAI API to prevent an accidental `OPENAI_BASE_URL` environment override from redirecting credentials; trusted proxy/certificate/logging environment remains part of the trust boundary. Do not expose a paid provider call on the unauthenticated HTTP API or connect it to task execution. No live call or credentials used. Account limits, actual billing, network connectivity, retention and production readiness remain unverified.

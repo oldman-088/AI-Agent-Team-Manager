@@ -52,7 +52,7 @@ def test_request_validation_and_client_configuration(monkeypatch):
     with pytest.raises(ValueError):
         OpenAIProvider.from_api_key(' ')
     OpenAIProvider.from_api_key('private-key')
-    factory.assert_called_once_with(api_key='private-key', timeout=30.0, max_retries=0)
+    factory.assert_called_once_with(api_key='private-key', base_url='https://api.openai.com/v1', timeout=30.0, max_retries=0)
 
 
 def test_official_sdk_request_with_mock_transport():

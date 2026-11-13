@@ -1,3 +1,3 @@
 # Current task
 
-Design authenticated audit and safe agent execution; expand accessibility and concurrency coverage. Ready-task checks passed at `9b14e10`.
+Verify the opt-in local provider probe and fixed SDK endpoint in GitHub CI; continue safe provider and execution design. Return to planning improvements later.

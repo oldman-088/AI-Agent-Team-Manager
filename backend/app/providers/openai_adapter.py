@@ -17,7 +17,7 @@ class OpenAIProvider:
         if not api_key or not api_key.strip():
             raise ValueError('OpenAI API key is required')
         # No implicit retry: a retry can incur duplicate cost. Never log credentials.
-        return cls(AsyncOpenAI(api_key=api_key, timeout=30.0, max_retries=0))
+        return cls(AsyncOpenAI(api_key=api_key, base_url='https://api.openai.com/v1', timeout=30.0, max_retries=0))
 
     async def complete(self, request: CompletionRequest) -> CompletionResult:
         try:
