@@ -24,11 +24,12 @@ See `WORKFLOW_REPORT.json` for the file inventory.
 
 - Python unit/API tests: 2 passed on Linux, Python 3.11.2.
 - Python compileall: passed. Documentation inventory: 10 files present. `git diff --check`: passed before report update.
-- GitHub CI: not yet verified. React build: not implemented.
+- Initial GitHub Actions Ubuntu matrix passed; Windows matrix failed. Exact logs could not be downloaded. Explicit SQLite connection cleanup has been added as a likely fix; re-validation is pending. CodeQL is pending. React build: not implemented.
 
 ## Errors, fixes and blockers
 
 - Direct raw GitHub README URLs were inaccessible; used GitHub API instead.
+- The initial Windows CI tests failed; logs were inaccessible. SQLite connections were explicitly closed as a likely fix; a re-run is required. CI also warned about Node 20 action deprecation.
 - Project license not selected; Docker and psql unavailable here; Windows not validated.
 
 ## Next actions and remaining work

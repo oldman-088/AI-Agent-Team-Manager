@@ -1,5 +1,6 @@
 """Dependency-free local HTTP API and SQLite persistence."""
 import argparse
+from contextlib import contextmanager
 import json
 import sqlite3
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -10,11 +11,16 @@ ROOT = Path(__file__).resolve().parent.parent
 STATUSES = ('todo', 'in_progress', 'done')
 
 
+@contextmanager
 def connect(path):
     db = sqlite3.connect(path, timeout=10)
-    db.row_factory = sqlite3.Row
-    db.execute('PRAGMA foreign_keys = ON')
-    return db
+    try:
+        db.row_factory = sqlite3.Row
+        db.execute('PRAGMA foreign_keys = ON')
+        with db:
+            yield db
+    finally:
+        db.close()
 
 
 def initialize(path):

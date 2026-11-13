@@ -1,5 +1,5 @@
 {
-  "last_updated_utc": "2026-11-13T16:37:40+00:00",
+  "last_updated_utc": "2026-11-13T16:38:43+00:00",
   "overall_completion_percentage": null,
   "completion_note": "Unknown: full specification is broad and not yet decomposed into weighted verifiable tasks. Do not extrapolate from the prototype.",
   "current_phase": "Phase 0 \u2014 In Progress",
@@ -47,7 +47,8 @@
     "README.md",
     ".gitignore",
     "progress/WORKFLOW_REPORT.md",
-    "progress/WORKFLOW_REPORT.json"
+    "progress/WORKFLOW_REPORT.json",
+    "team_manager/app.py"
   ],
   "tests_executed": [
     {
@@ -67,12 +68,14 @@
       "result": "Passed before report update"
     }
   ],
-  "build_status": "Prototype Python compilation passed; React build not implemented. GitHub CI not yet verified.",
+  "build_status": "Initial GitHub Actions Ubuntu jobs passed; Windows jobs failed. SQLite connection close fix pushed for re-validation; CodeQL pending.",
   "errors_encountered": [
-    "Direct raw GitHub README URLs are inaccessible in this environment; GitHub API was used instead."
+    "Direct raw GitHub README URLs are inaccessible in this environment; GitHub API was used instead.",
+    "Initial CI Windows tests failed; Actions log download is inaccessible. Node 20 action deprecation warning observed."
   ],
   "fixes_implemented": [
-    "Read candidate READMEs via GitHub API."
+    "Read candidate READMEs via GitHub API.",
+    "Explicitly close SQLite connections after transaction completion; Windows CI re-validation pending."
   ],
   "blockers": [
     "Project license not selected.",
