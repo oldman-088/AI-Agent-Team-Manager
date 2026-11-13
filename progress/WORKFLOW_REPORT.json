@@ -1,9 +1,9 @@
 {
-  "last_updated_utc": "2026-11-13T17:07:50+00:00",
+  "last_updated_utc": "2026-11-13T17:10:30+00:00",
   "overall_completion_percentage": null,
   "completion_note": "Total project effort completion unknown. The acceptance-criteria indicator is conservative and equally weighted; it is not an estimate of effort or delivery date.",
-  "current_phase": "Phases 0–4 in progress, with partial planning work only in phase 4",
-  "current_task": "Design secure credential management and provider integration",
+  "current_phase": "Phases 0–4 and partial Phase 10 in progress",
+  "current_task": "Verify multilingual dashboard and RTL tests in CI",
   "completed_tasks": [
     "Inspected repository, branches, permissions and local tools",
     "Researched candidate repositories and documented preliminary findings",
@@ -25,11 +25,15 @@
     "Added official OpenAI SDK adapter and provider protocol; tests use mocks only",
     "Added Arabic acceptance progress report and weighted calculation",
     "Ran local backend and frontend startup smoke checks",
-    "Audited local Python environment and upgraded vulnerable tooling"
+    "Audited local Python environment and upgraded vulnerable tooling",
+    "Translated current dashboard to English, Arabic and Persian",
+    "Added document language, RTL direction and bidirectional text isolation",
+    "Added DOM tests for language switching and errors"
   ],
   "in_progress_tasks": [
-    "Implement secure credential management and live provider verification",
-    "Complete dependency and license review"
+    "Verify frontend localization CI",
+    "Validate real-browser layout and accessibility",
+    "Implement secure credential management and safe execution"
   ],
   "pending_tasks": [
     "Full project and agent management",
@@ -39,20 +43,19 @@
     "Browser end-to-end testing"
   ],
   "files_created": [
-    "backend/app/providers/__init__.py",
-    "backend/app/providers/base.py",
-    "backend/app/providers/openai_adapter.py",
-    "backend/tests/test_providers.py",
-    "progress/تقرير_التقدم.md"
+    "frontend/src/App.tsx",
+    "frontend/src/App.test.tsx",
+    "frontend/src/i18n/messages.ts",
+    "frontend/src/i18n/messages.test.ts"
   ],
   "files_modified": [
-    "backend/pyproject.toml",
-    "backend/README.md",
-    "README.md",
-    "docs/RESEARCH.md",
+    "frontend/src/main.tsx",
+    "frontend/src/style.css",
+    "frontend/package.json",
+    "frontend/package-lock.json",
+    "frontend/README.md",
     "docs/ROADMAP.md",
-    "docs/TECHNICAL_DECISIONS.md",
-    "docs/THIRD_PARTY_DEPENDENCIES.md",
+    "progress/تقرير_التقدم.md",
     "progress/WORKFLOW_REPORT.md",
     "progress/WORKFLOW_REPORT.json",
     "progress/PROJECT_STATUS.md",
@@ -62,44 +65,41 @@
   ],
   "tests_executed": [
     {
+      "command": "cd frontend && npm run typecheck && npm test && npm run build",
+      "result": "Passed; 12 tests, including jsdom language/direction tests; production build passed"
+    },
+    {
+      "command": "cd frontend && npm audit --audit-level=high",
+      "result": "Zero vulnerabilities"
+    },
+    {
       "command": "cd backend && pytest -q",
-      "result": "11 passed on Linux including official OpenAI SDK mock HTTP transport; no real provider call; one Starlette deprecation warning"
+      "result": "11 passed; one Starlette httpx deprecation warning"
     },
     {
-      "command": "Local Uvicorn and Vite process startup HTTP smoke checks",
-      "result": "Both returned HTTP 200 on Linux; no browser test"
-    },
-    {
-      "command": ".venv/bin/pip-audit",
-      "result": "No known vulnerabilities after upgrading pip and setuptools; local editable package skipped"
-    },
-    {
-      "command": "Previous CI at e1e334d",
-      "result": "PostgreSQL, frontend, prototype and CodeQL passed; current commit not yet verified"
-    },
-    {
-      "command": "GitHub Actions PR checks at d2d35b1",
-      "result": "All passed: backend PostgreSQL and mocked provider tests, frontend, prototype matrix, CodeQL"
+      "command": "python scripts/check_docs.py; git diff --check",
+      "result": "Passed before report update"
     }
   ],
-  "build_status": "All PR checks passed at d2d35b1; later commits require their own checks.",
+  "build_status": "Frontend production build passed locally; current GitHub checks pending. No real browser validation.",
   "errors_encountered": [
-    "Initial local pip-audit identified vulnerable old pip and setuptools; one Starlette httpx deprecation warning persists."
+    "First DOM test failed because test text appeared in several elements; changed test to accept multiple expected matches.",
+    "Starlette httpx deprecation warning remains."
   ],
   "fixes_implemented": [
-    "Upgraded local virtual-environment pip and setuptools and repeated audit successfully; editable project skipped by audit."
+    "Corrected DOM query and reran all 12 frontend tests successfully."
   ],
   "blockers": [
-    "Project license not selected",
-    "Live provider authentication and integration not verified; no credentials used",
-    "Authentication, secure secret management, execution, browser E2E and most platform features unimplemented"
+    "No project license selected",
+    "Live provider authentication and integration not verified",
+    "Real-browser RTL/accessibility validation, agent execution, authentication and most platform features remain unimplemented"
   ],
   "next_actions": [
-    "Verify provider adapter CI",
-    "Implement secure credential management and authorized provider test",
-    "Design safe task dependencies and agent lifecycle"
+    "Verify GitHub Actions",
+    "Test translated UI in a real browser and review RTL/accessibility",
+    "Implement secure credentials and safe agent execution"
   ],
-  "estimated_remaining_work": "26 of 30 acceptance criteria remain unverified; reliable time and effort estimates unavailable.",
+  "estimated_remaining_work": "26 of 30 full acceptance criteria remain unverified; duration unknown.",
   "acceptance_criteria_completion_percentage": 13.3,
   "acceptance_criteria_method": "4 of 30 equally weighted acceptance criteria, verified as binary items; partial criteria receive no credit. Criteria 2 and 3 were smoke-tested on Linux only; criteria 4 and 5 verified via PostgreSQL CI. Details in progress/تقرير_التقدم.md.",
   "verified_acceptance_criteria": [

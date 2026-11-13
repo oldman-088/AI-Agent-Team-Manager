@@ -7,3 +7,5 @@ The dashboard lists and creates basic project records when the backend database 
 Agent configuration records can be created and listed, optionally associated with a project. Editing and deletion are API-only; these records do not execute agents or validate provider/model configuration.
 
 The dashboard creates and lists planning tasks linked to projects; task editing, cancellation and deletion are API-only. Lists and project selectors currently show only the first 100 results; pagination controls are not implemented.
+
+The current dashboard supports English, Arabic and Persian via its language selector. It applies document-level `lang` and `dir`, logical spacing, and bidirectional isolation for user-entered text; changing language is temporary and resets on reload. Automated DOM tests cover language switching, translated errors and direction, but real-browser visual, keyboard, screen-reader and complete product-wide RTL validation remain outstanding.

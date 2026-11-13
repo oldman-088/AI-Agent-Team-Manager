@@ -1,3 +1,3 @@
 # Current task
 
-Design secure credential management and provider integration. PR checks passed at `d2d35b1`; no live OpenAI call was made.
+Verify multilingual dashboard CI; perform real-browser RTL and accessibility testing, and continue secure credential and execution design.

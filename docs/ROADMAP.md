@@ -12,7 +12,7 @@ The master specification supplied by the user is the authoritative requirements 
 - Phase 7 — **Not Started**: scoped shared memory.
 - Phase 8 — **Not Started**: QA and recovery.
 - Phase 9 — **Not Started**: monitoring, approvals and security.
-- Phase 10 — **Not Started**: full UI, English/Arabic/Persian and RTL.
+- Phase 10 — **In Progress**: current dashboard translated into English/Arabic/Persian with document direction and DOM tests; full UI and real-browser RTL and accessibility validation remain outstanding.
 - Phase 11 — **Not Started**: end-to-end, security, performance, Windows and Ubuntu validation, release.
 
 See the master specification for complete acceptance criteria. The existing prototype is not a substitute for these phases.

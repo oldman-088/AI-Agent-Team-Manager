@@ -1,3 +1,3 @@
 # Completed tasks
 
-Research and architecture baseline; prototype CI; FastAPI and React foundations; basic project, agent-configuration and planning-task CRUD; mock-tested OpenAI adapter; Arabic acceptance progress report. See `WORKFLOW_REPORT.md` for evidence and gaps.
+Research and architecture baseline; CI; backend/frontend foundations; project, agent-configuration and task records; mocked provider adapter; Arabic progress report; translated current dashboard with DOM tests. See `WORKFLOW_REPORT.md` for verification and gaps.
