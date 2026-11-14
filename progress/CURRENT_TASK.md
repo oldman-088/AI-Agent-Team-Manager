@@ -1,3 +1,3 @@
 # Current task
 
-Implement worker isolation and safe remote recovery; design per-user identity and budget controls. Available-agent scheduler selection passed CI at `02bffe3`.
+Verify agent claim inspection on PostgreSQL and authenticated browser CI; then implement worker isolation and safe remote recovery, per-user identity and budget controls.

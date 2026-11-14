@@ -1,6 +1,7 @@
 import { setApiToken } from './api';
 import { TaskRuns } from './TaskRuns';
 import { UnresolvedRuns } from './UnresolvedRuns';
+import { AgentClaim } from './AgentClaim';
 import { TaskAssignment } from './TaskAssignment';
 import { TaskDetails } from './TaskDetails';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
@@ -125,6 +126,7 @@ export function App() {
         <button disabled={savingAgent || health !== 'ready'}>{savingAgent ? t.saving : t.createAgent}</button>
       </form>
       {agents.length ? <ul>{agents.map(agent => <li key={agent.id}><strong><bdi>{agent.name}</bdi></strong> · <bdi>{agent.role}</bdi> — {t.noExecution}</li>)}</ul> : <p>{t.noAgents}</p>}
+      <AgentClaim agents={agents} locale={locale} />
     </section>
     <section aria-labelledby="tasks-heading"><h2 id="tasks-heading">{t.tasks}</h2><p>{t.tasksHelp}</p><p>{t.completeHelp}</p>
       <form onSubmit={submitTask}>

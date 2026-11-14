@@ -1,6 +1,6 @@
 # Workflow report
 
-Last updated: 2026-11-13T20:22:29+00:00
+Last updated: 2026-11-14T05:27:46+00:00
 
 ## Completion indicator
 
@@ -79,3 +79,7 @@ Added read-only scheduler `--dry-run` to display a bounded candidate snapshot wi
 ## Available-agent scheduler selection
 
 The advisory batch selector excludes agents with unresolved runs so they do not consume the limited candidate list ahead of available agents. It remains a snapshot and claim-time checks remain authoritative. A failed batch stops; later explicit batches do not retry historical tasks. SQLite backend 27 tests passed with mocked provider, including a separate available agent; All PR checks passed at `02bffe3`, including [PostgreSQL](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43500745194), [Chromium](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43500745136) and [CodeQL](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43500745141). Later commits require separate verification. Acceptance remains 4/30.
+
+## Agent-scoped claim inspection
+
+Added read-only API and translated on-demand agent claim display. The `claim_status` is a snapshot of unresolved database records, not process lifecycle: even no claim does not prove an OS process or remote request stopped. No control, automatic resolution or retry. Local SQLite 27 tests and frontend 20 tests/typecheck/build passed; npm audit zero. PostgreSQL and browser CI pending. Acceptance remains 4/30.

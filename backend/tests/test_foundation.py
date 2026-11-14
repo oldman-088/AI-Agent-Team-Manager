@@ -122,6 +122,8 @@ def test_migration_and_readiness(tmp_path, monkeypatch, capsys):
             agent = result.json()
             assert agent['name'] == 'Ada' and agent['execution_status'] == 'not_implemented'
             agent_id = agent['id']
+            assert client.get(f'/api/agents/{agent_id}/claim').json()['claim_status'] == 'none'
+            assert client.get('/api/agents/2147483647/claim').status_code == 404
             assert client.get('/api/agents').json()[0]['id'] == agent_id
             assert client.get(f'/api/agents/{agent_id}').json()['project_id'] == project_id
             assert client.patch(f'/api/agents/{agent_id}', json={'instructions': 'Review carefully'}).json()['instructions'] == 'Review carefully'
@@ -202,6 +204,9 @@ def test_migration_and_readiness(tmp_path, monkeypatch, capsys):
                 assert client.get(f'/api/runs/unresolved?project_id={project_id}').json() == unresolved
                 assert client.get('/api/runs/unresolved?limit=0').status_code == 422
                 assert client.get('/api/runs/unresolved?project_id=0').status_code == 422
+                claim = client.get(f'/api/agents/{agent_id}/claim').json()
+                assert claim['claim_status'] == 'running' and claim['run_id'] == run_id and claim['task_id'] == task_id
+                assert claim['heartbeat_state'] == 'fresh' and 'Private instruction' not in str(claim)
                 running = client.get(f'/api/tasks/{task_id}/runs').json()[0]
                 assert running['status'] == 'running' and running['heartbeat_state'] == 'fresh'
                 with pytest.raises(RuntimeError, match='unresolved worker runs'):
@@ -291,6 +296,7 @@ def test_migration_and_readiness(tmp_path, monkeypatch, capsys):
                 failed = Mock(complete=AsyncMock(side_effect=RuntimeError('secret')), close=AsyncMock())
                 assert asyncio.run(run_once(worker_engine, task_id, 'key', lambda _: failed)) == 1
                 uncertain = client.get(f'/api/tasks/{task_id}/runs').json()[0]
+                assert client.get(f'/api/agents/{agent_id}/claim').json()['claim_status'] == 'uncertain'
                 assert client.get('/api/runs/unresolved').json()[0]['status'] == 'uncertain'
                 assert uncertain['status'] == 'uncertain'
                 assert 'secret' not in capsys.readouterr().err
@@ -300,6 +306,7 @@ def test_migration_and_readiness(tmp_path, monkeypatch, capsys):
                     assert resolve_run(session, uncertain['id'])
                     assert not resolve_run(session, uncertain['id'])
                 assert client.get('/api/runs/unresolved').json() == []
+                assert client.get(f'/api/agents/{agent_id}/claim').json()['claim_status'] == 'none'
                 # Disposable database only: history must be explicitly handled before downgrade/deletion.
                 with worker_engine.begin() as connection:
                     connection.execute(text('DELETE FROM task_runs'))
