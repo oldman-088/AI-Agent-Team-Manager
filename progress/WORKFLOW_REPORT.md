@@ -1,6 +1,6 @@
 # Workflow report
 
-Last updated: 2026-11-14T05:29:05+00:00
+Last updated: 2026-11-14T08:35:47+00:00
 
 ## Completion indicator
 
@@ -83,3 +83,7 @@ The advisory batch selector excludes agents with unresolved runs so they do not 
 ## Agent-scoped claim inspection
 
 Added read-only API and translated on-demand agent claim display. The `claim_status` is a snapshot of unresolved database records, not process lifecycle: even no claim does not prove an OS process or remote request stopped. No control, automatic resolution or retry. Local SQLite 27 tests and frontend 20 tests/typecheck/build passed; npm audit zero. All PR checks passed at `7f27d8b`, including [PostgreSQL](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43561644830), [authenticated Chromium](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43561644868) and [CodeQL](https://github.com/oldman-088/AI-Agent-Team-Manager/actions/runs/43561644853). Later commits need separate verification. Acceptance remains 4/30.
+
+## Resume handoff
+
+See `progress/تقرير_الاستئناف.md` for exact current capabilities, constraints and next steps. All PR checks passed at `4234e98`; subsequent documentation-only commits need separate verification. Continue with a tested isolation/recovery improvement without automatic heartbeat-based release or retry. Acceptance remains 4/30.
