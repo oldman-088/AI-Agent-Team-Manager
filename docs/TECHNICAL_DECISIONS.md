@@ -76,3 +76,11 @@ For `running` claims, default manual resolution refuses recent or missing heartb
 ## 2026-11-13: Non-billable batch preview
 
 The one-shot scheduler offers a read-only `--dry-run` showing bounded candidate IDs without credentials, claims or provider creation. It shares the existing advisory selector, so concurrent changes, capacity and unresolved runs may still prevent later claims; preview is not authorization or a scheduling guarantee. Executing remains opt-in with both cost and data transfer confirmations.
+
+## Scheduler candidate availability
+
+The advisory batch selector excludes agents already holding unresolved runs so an earlier blocked agent does not starve other eligible agents within the selection limit. It remains a snapshot: concurrent claims or an agent becoming unavailable after selection can still stop the batch, and claim-time checks remain authoritative. A failed/uncertain batch never continues automatically; a later operator-invoked batch may consider other agents, and historical tasks are never automatically retried.
+
+## Recorded per-agent claim inspection
+
+Expose an agent-scoped, read-only snapshot of the unresolved run and its advisory heartbeat, and show it on demand in the dashboard. The field is deliberately named `claim_status`, distinct from process lifecycle: absence of a database claim is not evidence that the OS process or remote request has stopped. Preserve the existing `execution_status: not_implemented` configuration field; do not infer lifecycle or allow mutation through this endpoint.

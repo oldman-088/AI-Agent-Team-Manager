@@ -34,6 +34,9 @@ test('create records and switch language with RTL and keyboard access', async ({
   await page.getByRole('button', { name: 'Create configuration' }).click();
   await expect(agentSection.locator('li')).toContainText('QA Agent');
   await expect(agentSection.locator('li')).toContainText('Agent process lifecycle not implemented');
+  const claimOption = page.getByLabel('Inspect agent claim').locator('option').filter({hasText: 'QA Agent'});
+  await page.getByLabel('Inspect agent claim').selectOption((await claimOption.getAttribute('value'))!);
+  await expect(page.getByText('No unresolved claim recorded.')).toBeVisible();
 
   const taskSection = page.getByRole('region', { name: 'Planning tasks', exact: true });
   await taskSection.getByLabel('Project').selectOption({label: 'مشروع AATM'});

@@ -1,12 +1,16 @@
 """Agent configuration registry. It does not start or control agent processes."""
-from typing import Annotated
+from datetime import datetime, timezone
+from typing import Annotated, Literal
+
+from pydantic import BaseModel
 
 from fastapi import APIRouter, HTTPException, Path, Response
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 
 from app.api.projects import Db
-from app.models import Agent, Project
+from app.models import Agent, Project, TaskRun
+from app.services.run_inspection import heartbeat_state
 from app.schemas import AgentCreate, AgentUpdate, AgentView
 
 router = APIRouter(prefix='/api/agents', tags=['agents'])
@@ -45,6 +49,28 @@ def create_agent(data: AgentCreate, db: Db) -> Agent:
 @router.get('/{agent_id}', response_model=AgentView)
 def get_agent(agent_id: AgentId, db: Db) -> Agent:
     return find_agent(db, agent_id)
+
+
+class AgentClaimView(BaseModel):
+    agent_id: int
+    claim_status: Literal['none', 'running', 'uncertain']
+    run_id: int | None = None
+    task_id: int | None = None
+    heartbeat_at: datetime | None = None
+    heartbeat_state: Literal['fresh', 'stale', 'unknown', 'not_running'] | None = None
+
+
+@router.get('/{agent_id}/claim', response_model=AgentClaimView)
+def get_agent_claim(agent_id: AgentId, db: Db) -> AgentClaimView:
+    """Snapshot of recorded unresolved claim, not process or provider liveness."""
+    find_agent(db, agent_id)
+    run = db.scalar(select(TaskRun).where(TaskRun.agent_id == agent_id,
+                    TaskRun.status.in_(['running', 'uncertain'])).order_by(TaskRun.id).limit(1))
+    if run is None:
+        return AgentClaimView(agent_id=agent_id, claim_status='none')
+    return AgentClaimView(agent_id=agent_id, claim_status=run.status, run_id=run.id,
+                          task_id=run.task_id, heartbeat_at=run.heartbeat_at,
+                          heartbeat_state=heartbeat_state(run, datetime.now(timezone.utc)))
 
 
 @router.patch('/{agent_id}', response_model=AgentView)

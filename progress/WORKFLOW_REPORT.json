@@ -1,9 +1,9 @@
 {
-  "last_updated_utc": "2026-11-13T19:36:33+00:00",
+  "last_updated_utc": "2026-11-14T08:35:47+00:00",
   "overall_completion_percentage": null,
   "completion_note": "Total project effort completion unknown. The acceptance-criteria indicator is conservative and equally weighted; it is not an estimate of effort or delivery date.",
   "current_phase": "Phases 0–4 and partial Phase 10 in progress",
-  "current_task": "Design worker isolation and safe remote recovery",
+  "current_task": "Resume: review handoff then implement tested worker isolation and safe recovery",
   "completed_tasks": [
     "Inspected repository, branches, permissions and local tools",
     "Researched candidate repositories and documented preliminary findings",
@@ -53,10 +53,12 @@
     "Added optional local shared API bearer gate and in-memory dashboard support",
     "Added read-only cross-project unresolved worker inspection",
     "Added precautionary manual-resolution heartbeat guard",
-    "Added non-billable scheduler candidate preview"
+    "Added non-billable scheduler candidate preview",
+    "Improved scheduler selection to bypass agents with unresolved runs",
+    "Added agent-scoped unresolved claim inspection"
   ],
   "in_progress_tasks": [
-    "Implement worker isolation and safe recovery",
+    "Implement worker isolation and safe remote recovery",
     "Design per-user authorization and budget controls"
   ],
   "pending_tasks": [
@@ -66,11 +68,17 @@
     "Browser sessions and other phases 2–11",
     "Browser end-to-end testing"
   ],
-  "files_created": [],
+  "files_created": [
+    "frontend/src/AgentClaim.tsx",
+    "frontend/src/AgentClaim.test.tsx"
+  ],
   "files_modified": [
-    "backend/app/task_scheduler.py",
+    "backend/app/api/agents.py",
     "backend/tests/test_foundation.py",
     "backend/README.md",
+    "frontend/src/App.tsx",
+    "frontend/src/i18n/messages.ts",
+    "frontend/e2e/dashboard.spec.ts",
     "docs/TECHNICAL_DECISIONS.md",
     "progress/تقرير_التقدم.md",
     "progress/WORKFLOW_REPORT.md",
@@ -80,24 +88,37 @@
   ],
   "tests_executed": [
     {
-      "command": "cd backend && pytest -q",
-      "result": "27 passed on SQLite including dry-run with no key, no claims and mocked forbidden provider construction; Starlette warning"
+      "command": "cd backend && ../.venv/bin/pytest -q",
+      "result": "27 passed on SQLite, including agent claim none/running/uncertain and sanitized metadata; mocked provider; Starlette warning"
     },
     {
-      "command": "gh pr checks 4 --watch at dbe17f8",
-      "result": "All checks passed including PostgreSQL heartbeat resolution race, Chromium and CodeQL"
+      "command": "cd frontend && npm run typecheck && npm test && npm run build",
+      "result": "20 tests passed, typecheck and build passed"
     },
     {
-      "command": "gh pr checks 4 --watch at 91b14e4",
-      "result": "All passed including PostgreSQL dry-run, authenticated Chromium, frontend, Windows/Ubuntu prototype matrix and CodeQL; no live provider calls"
+      "command": "cd frontend && npm audit --audit-level=high",
+      "result": "0 vulnerabilities"
+    },
+    {
+      "command": "gh pr checks 5 at 30d2ac4",
+      "result": "All passed for previous documentation checkpoint including PostgreSQL, Chromium and CodeQL"
+    },
+    {
+      "command": "gh pr checks 5 --watch at 7f27d8b",
+      "result": "All passed including PostgreSQL agent claim states, authenticated Chromium, frontend, prototype matrix and CodeQL"
+    },
+    {
+      "command": "gh pr checks 5 at 4234e98",
+      "result": "All passed including PostgreSQL, authenticated Chromium, frontend, prototype matrix and CodeQL"
     }
   ],
-  "build_status": "All PR checks passed at 91b14e4; later commits require separate verification.",
+  "build_status": "All PR checks passed at 4234e98; handoff documentation commit needs separate verification.",
   "errors_encountered": [
+    "Fresh session restored branch HEAD to base while preserving previous checkpoint files; verified working tree exactly matched remote and fast-forwarded branch pointer without changing files.",
     "Starlette httpx deprecation warning persists."
   ],
   "fixes_implemented": [
-    "Added read-only bounded scheduler preview without credentials, confirmations, claims or provider calls."
+    "Agent-scoped read-only unresolved claim and advisory heartbeat view; no inferred process liveness or control."
   ],
   "blockers": [
     "No project license selected",
@@ -107,9 +128,9 @@
     "Heartbeat is advisory; no automatic safe recovery or run retention management"
   ],
   "next_actions": [
-    "Verify PostgreSQL and full GitHub CI",
-    "Design process isolation and safe remote recovery",
-    "Implement per-user authorization and budget controls"
+    "Read progress/تقرير_الاستئناف.md and verify Git and PR state",
+    "Implement a safe tested worker isolation/recovery improvement without automatic heartbeat-based release or retry",
+    "Develop per-user authorization and budget controls"
   ],
   "estimated_remaining_work": "26 of 30 full acceptance criteria remain unverified; duration unknown.",
   "acceptance_criteria_completion_percentage": 13.3,
